@@ -1,0 +1,51 @@
+package com.curier_app.curier_app.model;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "colet")
+public class Colet {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_colet")
+    private Long idColet;
+
+    @ManyToOne
+    @JoinColumn(name = "id_comanda", nullable = false)
+    private Comanda comanda;
+
+    @Column(name = "cod_awb", length = 30, nullable = false, unique = true)
+    private String codAwb;
+
+    @Column(name = "greutate_kg", precision = 6, scale = 2)
+    private BigDecimal greutateKg;
+
+    @Column(name = "volum_m3", precision = 6, scale = 2)
+    private BigDecimal volumM3;
+
+    @Column(name = "tip_serviciu", length = 20)
+    private String tipServiciu;
+
+    @Column(name = "pret_declarat", precision = 8, scale = 2)
+    private BigDecimal pretDeclarat;
+
+    @Column(name = "status_colet", length = 20, nullable = false)
+    private String statusColet = "in_asteptare";
+
+    @ManyToOne
+    @JoinColumn(name = "id_adresa_expeditor", nullable = false)
+    private Adresa adresaExpeditor;
+
+    @ManyToOne
+    @JoinColumn(name = "id_adresa_destinatar", nullable = false)
+    private Adresa adresaDestinatar;
+}
