@@ -392,23 +392,23 @@ export default function UsersCRUDPage() {
                       </span>
                     </td>
                     <td className="actions-cell">
-                      <div className="action-buttons">
+                      <div style={{ display: 'flex', gap: '8px' }}>
                         <button 
-                          className="btn-icon btn-edit" 
+                          className="btn-action btn-edit-action" 
                           onClick={() => openEditModal(user)}
                           title="Editează"
                         >
                           ✏️
                         </button>
                         <button 
-                          className="btn-icon btn-toggle"
+                          className={`btn-action ${user.activ ? 'btn-pause-action' : 'btn-play-action'}`}
                           onClick={() => toggleActiv(user)}
                           title={user.activ ? 'Dezactivează' : 'Activează'}
                         >
-                          {user.activ ? '🔒' : '🔓'}
+                          {user.activ ? '⏸️' : '▶️'}
                         </button>
                         <button 
-                          className="btn-icon btn-delete"
+                          className="btn-action btn-delete-action"
                           onClick={() => setDeleteConfirm(user.idUtilizator!)}
                           title="Șterge"
                         >

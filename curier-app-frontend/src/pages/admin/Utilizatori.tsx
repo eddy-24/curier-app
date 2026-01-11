@@ -244,10 +244,10 @@ export default function Utilizatori() {
                 </td>
                 <td>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button className="btn-edit" onClick={() => openEditModal(user)}>
-                      ✏️ Editează
+                    <button className="btn-action btn-edit-action" onClick={() => openEditModal(user)} title="Editează">
+                      ✏️
                     </button>
-                    <button className="btn-danger" onClick={() => handleDelete(user.idUtilizator)}>
+                    <button className="btn-action btn-delete-action" onClick={() => handleDelete(user.idUtilizator)} title="Șterge">
                       🗑️
                     </button>
                   </div>

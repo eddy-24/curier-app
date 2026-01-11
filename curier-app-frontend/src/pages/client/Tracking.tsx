@@ -23,15 +23,21 @@ interface Colet {
   greutateKg: number;
   pretDeclarat?: number;
   rambursIncasat?: boolean;
+  metodaPlata?: string;
+  costCalculat?: number;
   adresaExpeditor: {
     oras: string;
     strada: string;
     numar: string;
+    nume?: string;
+    telefon?: string;
   };
   adresaDestinatar: {
     oras: string;
     strada: string;
     numar: string;
+    nume?: string;
+    telefon?: string;
   };
 }
 
@@ -94,6 +100,7 @@ export default function Tracking() {
   };
 
   const getStatusIcon = (status: string) => {
+    if (status.toLowerCase().includes('anulat')) return '❌';
     if (status.toLowerCase().includes('livrat')) return '✅';
     if (status.toLowerCase().includes('tranzit')) return '🚚';
     if (status.toLowerCase().includes('preluat')) return '📦';
@@ -120,7 +127,7 @@ export default function Tracking() {
       </header>
 
       {/* Lista expedieri */}
-      <div className="search-section" style={{ marginBottom: 32 }}>
+      <div className="search-section" style={{ marginBottom: 16 }}>
         <h2 style={{ fontSize: '1.1rem', color: '#c7d2fe', marginBottom: 12 }}>Expedierile mele</h2>
         {expedieriLoading ? (
           <div style={{ color: '#94A3B8', padding: 16 }}>Se încarcă...</div>
@@ -188,19 +195,30 @@ export default function Tracking() {
               </span>
             </div>
 
-            <div className="info-grid">
-              <div className="info-item">
-                <span className="info-label">Serviciu</span>
-                <span className="info-value">{colet.tipServiciu}</span>
+            {/* Mesaj anulare și restituire bani */}
+            {colet.statusColet === 'anulat' && (
+              <div className="cancel-notice">
+                <div className="cancel-icon">❌</div>
+                <div className="cancel-text">
+                  <strong>Comandă anulată</strong>
+                  <p className="refund-text">💰 Restituire bani în curs - Banii vor fi returnați în contul dumneavoastră în 3-5 zile lucrătoare.</p>
+                </div>
               </div>
-              <div className="info-item">
-                <span className="info-label">Greutate</span>
-                <span className="info-value">{colet.greutateKg} kg</span>
+            )}
+
+            <div className="info-simple-grid">
+              <div className="info-row">
+                <span className="label">📦 Serviciu:</span>
+                <span className="value">{colet.tipServiciu}</span>
               </div>
-              {colet.pretDeclarat && colet.pretDeclarat > 0 && (
-                <div className="info-item">
-                  <span className="info-label">Ramburs</span>
-                  <span className="info-value">
+              <div className="info-row">
+                <span className="label">⚖️ Greutate:</span>
+                <span className="value">{colet.greutateKg} kg</span>
+              </div>
+              {(colet.pretDeclarat || 0) > 0 && (
+                <div className="info-row">
+                  <span className="label">💰 Ramburs:</span>
+                  <span className="value">
                     {colet.pretDeclarat.toFixed(2)} RON
                     <span className={`payment-status ${colet.rambursIncasat ? 'paid' : 'pending'}`}>
                       {colet.rambursIncasat ? ' (✅ Încasat)' : ' (⏳ Neîncasat)'}
@@ -208,17 +226,44 @@ export default function Tracking() {
                   </span>
                 </div>
               )}
-              <div className="info-item">
-                <span className="info-label">De la</span>
-                <span className="info-value">
-                  {colet.adresaExpeditor?.oras}, {colet.adresaExpeditor?.strada} {colet.adresaExpeditor?.numar}
-                </span>
+            </div>
+
+            {/* Adrese expediere */}
+            <div className="address-section">
+              <div className="address-block">
+                <div className="address-header">
+                  <span className="address-icon">📤</span>
+                  <span className="address-title">EXPEDITOR</span>
+                </div>
+                <div className="address-content">
+                  {colet.adresaExpeditor?.nume && (
+                    <div className="address-name">👤 {colet.adresaExpeditor.nume}</div>
+                  )}
+                  <div className="address-line">{colet.adresaExpeditor?.strada} {colet.adresaExpeditor?.numar}</div>
+                  <div className="address-city">{colet.adresaExpeditor?.oras}</div>
+                  {colet.adresaExpeditor?.telefon && (
+                    <div className="address-phone">📞 {colet.adresaExpeditor.telefon}</div>
+                  )}
+                </div>
               </div>
-              <div className="info-item">
-                <span className="info-label">Către</span>
-                <span className="info-value">
-                  {colet.adresaDestinatar?.oras}, {colet.adresaDestinatar?.strada} {colet.adresaDestinatar?.numar}
-                </span>
+              
+              <div className="address-divider">→</div>
+              
+              <div className="address-block">
+                <div className="address-header">
+                  <span className="address-icon">📥</span>
+                  <span className="address-title">DESTINATAR</span>
+                </div>
+                <div className="address-content">
+                  {colet.adresaDestinatar?.nume && (
+                    <div className="address-name">👤 {colet.adresaDestinatar.nume}</div>
+                  )}
+                  <div className="address-line">{colet.adresaDestinatar?.strada} {colet.adresaDestinatar?.numar}</div>
+                  <div className="address-city">{colet.adresaDestinatar?.oras}</div>
+                  {colet.adresaDestinatar?.telefon && (
+                    <div className="address-phone">📞 {colet.adresaDestinatar.telefon}</div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

@@ -41,6 +41,9 @@ export default function CurierNavbar() {
         <a href="/curier/ramburs" className={`nav-link ${isActive('/curier/ramburs')}`}>
           💰 Ramburs
         </a>
+        <a href="/curier/rute" className={`nav-link ${isActive('/curier/rute')}`}>
+          🗺️ Rute
+        </a>
       </div>
 
       <div className="navbar-user">

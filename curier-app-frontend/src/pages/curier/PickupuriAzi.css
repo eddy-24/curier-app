@@ -179,3 +179,228 @@
     max-width: 700px;
   }
 }
+
+/* === Stiluri pentru noile componente (PickupuriAzi.tsx) === */
+
+.pickups-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.pickups-page.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  color: #94A3B8;
+}
+
+.loader {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(249, 115, 22, 0.2);
+  border-top-color: #F97316;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.count-badge {
+  background: linear-gradient(135deg, #F97316, #EA580C);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.pickups-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pickup-card {
+  background: #1E293B;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(15, 23, 42, 0.5);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.awb-code {
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  color: #F97316;
+  font-size: 0.9rem;
+}
+
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-badge.waiting {
+  background: rgba(249, 115, 22, 0.15);
+  color: #FB923C;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.status-badge.assigned {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60A5FA;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.status-badge.payment {
+  background: rgba(234, 179, 8, 0.15);
+  color: #FACC15;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.status-badge.picked {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ADE80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.card-body {
+  padding: 16px;
+}
+
+.info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+  color: #E2E8F0;
+  font-size: 0.9rem;
+}
+
+.info-row .icon {
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+}
+
+.info-row .text {
+  flex: 1;
+}
+
+.info-row.details {
+  color: #94A3B8;
+  font-size: 0.85rem;
+}
+
+.info-row.payment-info {
+  margin-top: 12px;
+  padding: 10px;
+  background: rgba(234, 179, 8, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(234, 179, 8, 0.2);
+}
+
+.info-row.payment-info .highlight {
+  color: #FACC15;
+  font-weight: 600;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(15, 23, 42, 0.3);
+  border-top: 1px solid rgba(148, 163, 184, 0.08);
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn.call {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60A5FA;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.action-btn.call:hover {
+  background: rgba(59, 130, 246, 0.25);
+}
+
+.action-btn.navigate {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ADE80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.action-btn.navigate:hover {
+  background: rgba(34, 197, 94, 0.25);
+}
+
+.action-btn.pickup-action {
+  flex: 2;
+  background: linear-gradient(135deg, #F97316, #EA580C);
+  color: white;
+}
+
+.action-btn.pickup-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+.action-btn.payment-action {
+  flex: 2;
+  background: linear-gradient(135deg, #EAB308, #CA8A04);
+  color: #1E293B;
+  animation: glow 2s infinite;
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(234, 179, 8, 0.3); }
+  50% { box-shadow: 0 0 15px rgba(234, 179, 8, 0.5); }
+}
+
+.action-btn.payment-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(234, 179, 8, 0.4);
+}
+}

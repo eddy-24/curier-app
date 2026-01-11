@@ -903,6 +903,76 @@
   color: #ffffff;
 }
 
+/* Servicii Livrare Grid */
+.servicii-livrare-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.serviciu-livrare-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.serviciu-livrare-card:hover {
+  border-color: #f97316;
+  background: rgba(249, 115, 22, 0.1);
+}
+
+.serviciu-livrare-card.selected {
+  border-color: #f97316;
+  background: rgba(249, 115, 22, 0.15);
+}
+
+.serviciu-livrare-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.serviciu-livrare-info strong {
+  font-size: 1.1rem;
+  color: #ffffff;
+}
+
+.serviciu-livrare-desc {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.serviciu-livrare-timp {
+  font-size: 0.8rem;
+  color: #22d3ee;
+}
+
+.serviciu-livrare-pret {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.serviciu-livrare-pret .pret-baza {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f97316;
+}
+
+.serviciu-livrare-pret .pret-extra {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
 /* Tip Conținut Grid */
 .continut-grid {
   display: grid;

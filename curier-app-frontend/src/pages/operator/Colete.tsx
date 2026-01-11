@@ -283,23 +283,22 @@ export default function Colete() {
     }
   };
 
-  const handleRaportIncident = async (tip: string) => {
+  const handleAnulareColet = async () => {
     if (!selectedColet) return;
 
-    const descriere = prompt(`Descriere ${tip}:`);
-    if (!descriere) return;
+    if (!confirm('Sigur doriți să anulați această comandă?')) return;
 
     try {
-      const res = await fetch(`http://localhost:8081/api/operator/colete/${selectedColet.idColet}/incident`, {
-        method: 'POST',
+      const res = await fetch(`http://localhost:8081/api/operator/colete/${selectedColet.idColet}/status`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tip, descriere })
+        body: JSON.stringify({ status: 'anulat' })
       });
 
       if (res.ok) {
         fetchColete();
         setShowModal(false);
-        alert('Incident raportat cu succes!');
+        alert('Comandă anulată cu succes!');
       }
     } catch (error) {
       console.error('Eroare:', error);
@@ -309,7 +308,10 @@ export default function Colete() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'inregistrat': return 'status-new';
-      case 'preluat_curier': return 'status-pickup';
+      case 'asteptare_plata': return 'status-payment';
+      case 'in_asteptare': return 'status-waiting';
+      case 'preluat_curier': 
+      case 'ridicat': return 'status-pickup';
       case 'in_tranzit': return 'status-transit';
       case 'in_livrare': return 'status-delivery';
       case 'livrat': return 'status-delivered';
@@ -321,7 +323,10 @@ export default function Colete() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'inregistrat': return 'Înregistrat';
-      case 'preluat_curier': return 'Preluat curier';
+      case 'asteptare_plata': return '💰 Așteaptă plata';
+      case 'in_asteptare': return 'În așteptare';
+      case 'preluat_curier': 
+      case 'ridicat': return 'Ridicat';
       case 'in_tranzit': return 'În tranzit';
       case 'in_livrare': return 'În livrare';
       case 'livrat': return 'Livrat';
@@ -471,7 +476,7 @@ export default function Colete() {
               <div className="detail-section">
                 <h3>Schimbă status</h3>
                 <div className="status-buttons">
-                  {['inregistrat', 'preluat_curier', 'in_tranzit', 'in_livrare', 'livrat', 'returnat'].map((s) => (
+                  {['inregistrat', 'asteptare_plata', 'in_asteptare', 'ridicat', 'in_tranzit', 'in_livrare', 'livrat', 'returnat'].map((s) => (
                     <button
                       key={s}
                       className={`status-btn ${selectedColet.statusColet === s ? 'current' : ''}`}
@@ -491,11 +496,8 @@ export default function Colete() {
                 <button className="btn-action" onClick={() => printAWB(selectedColet)}>
                   🖨️ Printează AWB
                 </button>
-                <button className="btn-action warning" onClick={() => handleRaportIncident('incident')}>
-                  ⚠️ Raportează incident
-                </button>
-                <button className="btn-action danger" onClick={() => handleRaportIncident('reclamatie')}>
-                  🚨 Reclamație
+                <button className="btn-action danger" onClick={() => handleAnulareColet()}>
+                  ❌ Anulare comandă
                 </button>
               </div>
             </div>

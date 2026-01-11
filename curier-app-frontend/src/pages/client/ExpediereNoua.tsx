@@ -17,6 +17,16 @@ interface Adresa {
   detaliiSuplimentare?: string;
 }
 
+interface ServiciuLivrare {
+  id: number;
+  nume: string;
+  descriere: string;
+  pretBaza: number;
+  pretPerKg: number;
+  timpLivrare: string;
+  activ: boolean;
+}
+
 // Dimensiuni colet predefinite
 const DIMENSIUNI_COLET = [
   { id: 'small', nume: 'Small', dimensiuni: '30 x 20 x 10 cm', maxKg: 2, pret: 11.50, icon: '📦' },
@@ -66,12 +76,18 @@ const emptyAdresa = {
 export default function ExpediereNoua() {
   const [step, setStep] = useState(1);
   const [adrese, setAdrese] = useState<Adresa[]>([]);
+  const [serviciiLivrare, setServiciiLivrare] = useState<ServiciuLivrare[]>([]);
+  const [serviciuSelectat, setServiciuSelectat] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [awbCodes, setAwbCodes] = useState<string[]>([]);
   
   const clientId = localStorage.getItem('userId') || '1';
+  const clientNume = localStorage.getItem('nume') || '';
+  const clientPrenume = localStorage.getItem('prenume') || '';
+  const clientEmail = localStorage.getItem('email') || '';
+  const clientTelefon = localStorage.getItem('telefon') || '';
 
   // Date formular
   const [dimensiuneSelectata, setDimensiuneSelectata] = useState('');
@@ -84,7 +100,7 @@ export default function ExpediereNoua() {
   const [latimeCm, setLatimeCm] = useState('');
   const [inaltimeCm, setInaltimeCm] = useState('');
   
-  // Expeditor
+  // Expeditor - pre-completat cu datele clientului
   const [expeditorNume, setExpeditorNume] = useState('');
   const [expeditorTelefon, setExpeditorTelefon] = useState('');
   const [expeditorEmail, setExpeditorEmail] = useState('');
@@ -106,9 +122,35 @@ export default function ExpediereNoua() {
   // Plata
   const [modalitatePlata, setModalitatePlata] = useState('card');
 
+  // Pre-completăm datele expeditorului cu datele clientului logat
+  useEffect(() => {
+    setExpeditorNume(`${clientPrenume} ${clientNume}`.trim());
+    setExpeditorEmail(clientEmail);
+    setExpeditorTelefon(clientTelefon);
+  }, [clientNume, clientPrenume, clientEmail, clientTelefon]);
+
   useEffect(() => {
     fetchAdrese();
+    fetchServicii();
   }, []);
+
+  const fetchServicii = async () => {
+    try {
+      const res = await fetch('http://localhost:8081/api/admin/servicii');
+      if (res.ok) {
+        const data = await res.json();
+        // Filtrăm doar serviciile active
+        const serviciiActive = data.filter((s: ServiciuLivrare) => s.activ);
+        setServiciiLivrare(serviciiActive);
+        // Selectăm primul serviciu activ by default
+        if (serviciiActive.length > 0 && !serviciuSelectat) {
+          setServiciuSelectat(serviciiActive[0].id);
+        }
+      }
+    } catch (err) {
+      console.error('Eroare la încărcarea serviciilor:', err);
+    }
+  };
 
   const fetchAdrese = async () => {
     try {
@@ -134,6 +176,16 @@ export default function ExpediereNoua() {
     let total = 0;
     const dim = DIMENSIUNI_COLET.find(d => d.id === dimensiuneSelectata);
     
+    // Adaugă costul serviciului de livrare selectat
+    const serviciu = serviciiLivrare.find(s => s.id === serviciuSelectat);
+    if (serviciu) {
+      total += serviciu.pretBaza || 0;
+      const greutate = parseFloat(greutateKg) || 0;
+      if (greutate > 0) {
+        total += greutate * (serviciu.pretPerKg || 0);
+      }
+    }
+    
     if (dim) {
       if (dim.id === 'custom') {
         // Calcul pret pentru dimensiuni personalizate
@@ -141,8 +193,8 @@ export default function ExpediereNoua() {
         const w = parseFloat(latimeCm) || 0;
         const h = parseFloat(inaltimeCm) || 0;
         const volumCm3 = l * w * h;
-        // Preț bazat pe volum: 15 lei bază + 0.0001 lei/cm³
-        total += 15 + (volumCm3 * 0.0001);
+        // Preț bazat pe volum: 0.0001 lei/cm³
+        total += (volumCm3 * 0.0001);
       } else {
         total += dim.pret;
       }
@@ -164,7 +216,6 @@ export default function ExpediereNoua() {
       if (serv) total += serv.pret;
     });
     
-    total += 8; // Taxă transport de bază
     return total;
   };
 
@@ -258,13 +309,16 @@ export default function ExpediereNoua() {
     setError('');
     try {
       const dim = DIMENSIUNI_COLET.find(d => d.id === dimensiuneSelectata);
+      const serviciu = serviciiLivrare.find(s => s.id === serviciuSelectat);
       const payload = {
         modalitatePlata,
+        costTotal: calculeazaCostTotal(), // Adaugă costul calculat
         colete: [{
           greutateKg: parseFloat(greutateKg) || dim?.maxKg || 1,
           volumM3: 0.01,
-          tipServiciu: dimensiuneSelectata === 'small' ? 'standard' : 'express',
+          tipServiciu: serviciu?.nume?.toLowerCase() || 'standard',
           pretDeclarat: 0,
+          costCalculat: calculeazaCostTotal(), // Costul pentru acest colet
           idAdresaExpeditor: parseInt(expeditorAdresaId),
           idAdresaDestinatar: parseInt(destinatarAdresaId)
         }]
@@ -416,6 +470,31 @@ export default function ExpediereNoua() {
                   )}
                 </div>
               )}
+
+              {/* Tip Serviciu Livrare */}
+              <div className="form-section">
+                <h3>🚚 Tip livrare</h3>
+                <div className="servicii-livrare-grid">
+                  {serviciiLivrare.map(serviciu => (
+                    <div 
+                      key={serviciu.id}
+                      className={`serviciu-livrare-card ${serviciuSelectat === serviciu.id ? 'selected' : ''}`}
+                      onClick={() => setServiciuSelectat(serviciu.id)}
+                    >
+                      <span className={`radio ${serviciuSelectat === serviciu.id ? 'checked' : ''}`}></span>
+                      <div className="serviciu-livrare-info">
+                        <strong>{serviciu.nume}</strong>
+                        <span className="serviciu-livrare-desc">{serviciu.descriere}</span>
+                        <span className="serviciu-livrare-timp">⏱️ {serviciu.timpLivrare}</span>
+                      </div>
+                      <div className="serviciu-livrare-pret">
+                        <span className="pret-baza">{serviciu.pretBaza?.toFixed(2) || '0.00'} lei</span>
+                        <span className="pret-extra">+{serviciu.pretPerKg?.toFixed(2) || '0.00'} lei/kg</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
               {/* Tip Conținut */}
               <div className="form-section">

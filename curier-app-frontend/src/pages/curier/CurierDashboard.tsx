@@ -9,6 +9,7 @@ interface DashboardStats {
   totalColete: number;
   rambursDeIncasat: number;
   rambursIncasatAzi: number;
+  sumaDeIncasatPickup: number;
 }
 
 const CurierDashboard = () => {
@@ -109,34 +110,16 @@ const CurierDashboard = () => {
       </div>
 
       <div className="ramburs-section" onClick={() => navigate('/curier/ramburs')}>
-        <h2>💰 Ramburs</h2>
+        <h2>💰 De încasat</h2>
         <div className="ramburs-cards">
-          <div className="ramburs-card pending">
-            <span className="ramburs-label">De încasat</span>
-            <span className="ramburs-value">{stats?.rambursDeIncasat?.toFixed(2) || '0.00'} RON</span>
+          <div className="ramburs-card pickup-cash">
+            <span className="ramburs-label">Plată pickup-uri</span>
+            <span className="ramburs-value">{stats?.sumaDeIncasatPickup?.toFixed(2) || '0.00'} RON</span>
           </div>
           <div className="ramburs-card collected">
             <span className="ramburs-label">Încasat azi</span>
             <span className="ramburs-value">{stats?.rambursIncasatAzi?.toFixed(2) || '0.00'} RON</span>
           </div>
-        </div>
-      </div>
-
-      <div className="quick-actions">
-        <h2>Acțiuni rapide</h2>
-        <div className="action-buttons">
-          <button className="action-btn scan" onClick={() => navigate('/curier/scan')}>
-            <span className="btn-icon">📷</span>
-            <span>Scanează AWB</span>
-          </button>
-          <button className="action-btn pickup" onClick={() => navigate('/curier/pickups')}>
-            <span className="btn-icon">📦</span>
-            <span>Vezi pickup-uri</span>
-          </button>
-          <button className="action-btn deliver" onClick={() => navigate('/curier/livrari')}>
-            <span className="btn-icon">🚚</span>
-            <span>Vezi livrări</span>
-          </button>
         </div>
       </div>
     </div>

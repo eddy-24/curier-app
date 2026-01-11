@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import AssignCourierDialog from './AssignCourierDialog';
+import '../admin/AdminLayout.css';
 import './ShipmentsQueuePage.css';
 
 interface Adresa {
@@ -409,6 +410,37 @@ export default function ShipmentsQueuePage() {
           <span className="badge badge-info">{filteredAndSortedColete.length} colete</span>
         </div>
         <div className="header-actions">
+          {selectedColete.length > 0 && (
+            <>
+              <button 
+                className="btn btn-secondary"
+                onClick={() => {
+                  selectedColete.forEach(id => {
+                    const colet = colete.find(c => c.idColet === id);
+                    if (colet) printAWB(colet);
+                  });
+                }}
+                title="Printează AWB-urile selectate"
+              >
+                🖨️ Printează ({selectedColete.length})
+              </button>
+              <select
+                className="bulk-status-select"
+                defaultValue=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    selectedColete.forEach(id => handleStatusChange(id, e.target.value));
+                    e.target.value = '';
+                  }
+                }}
+              >
+                <option value="">Schimbă status...</option>
+                {STATUS_OPTIONS.filter(s => s.value).map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </>
+          )}
           <button 
             className="btn btn-primary"
             onClick={handleAssignSelected}
@@ -524,8 +556,8 @@ export default function ShipmentsQueuePage() {
       </div>
 
       {/* Table */}
-      <div className="table-container">
-        <table className="shipments-table">
+      <div className="data-table-container">
+        <table className="data-table">
           <thead>
             <tr>
               <th className="th-checkbox">
@@ -553,13 +585,12 @@ export default function ShipmentsQueuePage() {
                 Data {sortConfig.key === 'dataCreare' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
               </th>
               <th>Curier</th>
-              <th>Acțiuni</th>
             </tr>
           </thead>
           <tbody>
             {filteredAndSortedColete.length === 0 ? (
               <tr>
-                <td colSpan={10} className="no-data">
+                <td colSpan={9} className="no-data">
                   <div className="empty-state">
                     <span className="empty-icon">📭</span>
                     <p>Nu există colete care să corespundă filtrelor</p>
@@ -580,7 +611,7 @@ export default function ShipmentsQueuePage() {
                     />
                   </td>
                   <td className="awb-cell">
-                    <code>{colet.codAwb}</code>
+                    <code style={{ background: 'rgba(148, 163, 184, 0.2)', padding: '4px 8px', borderRadius: '4px', color: '#94A3B8', fontSize: '12px' }}>{colet.codAwb}</code>
                   </td>
                   <td>
                     <span 
@@ -618,34 +649,6 @@ export default function ShipmentsQueuePage() {
                     ) : (
                       <span className="curier-none">Neasignat</span>
                     )}
-                  </td>
-                  <td className="actions-cell">
-                    <div className="action-buttons">
-                      <button 
-                        className="btn-icon btn-print"
-                        onClick={(e) => { e.stopPropagation(); printAWB(colet); }}
-                        title="Printează AWB"
-                      >
-                        🖨️
-                      </button>
-                      <button 
-                        className="btn-icon btn-assign"
-                        onClick={() => handleAssignSingle(colet)}
-                        title="Asignează curier"
-                      >
-                        🚚
-                      </button>
-                      <select
-                        className="status-select"
-                        value={colet.statusColet}
-                        onChange={e => handleStatusChange(colet.idColet, e.target.value)}
-                        onClick={e => e.stopPropagation()}
-                      >
-                        {STATUS_OPTIONS.filter(s => s.value).map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
-                    </div>
                   </td>
                 </tr>
               ))

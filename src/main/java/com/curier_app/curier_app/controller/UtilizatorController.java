@@ -55,6 +55,7 @@ public class UtilizatorController {
         response.put("nume", existingUser.getNume());
         response.put("prenume", existingUser.getPrenume());
         response.put("email", existingUser.getEmail());
+        response.put("telefon", existingUser.getTelefon());
         response.put("message", "Login cu succes!");
 
         return new ResponseEntity<>(response, HttpStatus.OK);

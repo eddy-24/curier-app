@@ -222,34 +222,6 @@ export default function AdminDashboard() {
           </table>
         )}
       </div>
-
-      {/* Quick Actions */}
-      <div style={{ marginTop: '32px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-        <a href="/admin/utilizatori" className="stat-card" style={{ textDecoration: 'none', cursor: 'pointer' }}>
-          <div className="stat-icon blue">👥</div>
-          <div className="stat-info">
-            <span className="stat-label" style={{ fontWeight: 600, color: '#F8FAFC' }}>Gestionează utilizatori</span>
-          </div>
-        </a>
-        <a href="/admin/servicii" className="stat-card" style={{ textDecoration: 'none', cursor: 'pointer' }}>
-          <div className="stat-icon green">📦</div>
-          <div className="stat-info">
-            <span className="stat-label" style={{ fontWeight: 600, color: '#F8FAFC' }}>Servicii & Tarife</span>
-          </div>
-        </a>
-        <a href="/admin/rapoarte" className="stat-card" style={{ textDecoration: 'none', cursor: 'pointer' }}>
-          <div className="stat-icon orange">📈</div>
-          <div className="stat-info">
-            <span className="stat-label" style={{ fontWeight: 600, color: '#F8FAFC' }}>Vezi rapoarte KPI</span>
-          </div>
-        </a>
-        <a href="/admin/configurari" className="stat-card" style={{ textDecoration: 'none', cursor: 'pointer' }}>
-          <div className="stat-icon purple">⚙️</div>
-          <div className="stat-info">
-            <span className="stat-label" style={{ fontWeight: 600, color: '#F8FAFC' }}>Configurări sistem</span>
-          </div>
-        </a>
-      </div>
     </div>
   );
 }

@@ -1,12 +1,41 @@
 /* Colet Update - Dark Theme (Mobile-First) */
 
-.colet-update-page {
+.colet-update {
   max-width: 500px;
   margin: 0 auto;
+  padding: 16px;
+  min-height: 100vh;
+  background: #0F172A;
 }
 
-.page-header {
-  text-align: center;
+.colet-update.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  color: #94A3B8;
+}
+
+.loader {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(249, 115, 22, 0.2);
+  border-top-color: #F97316;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Header */
+.colet-update .page-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
   margin-bottom: 20px;
   padding: 16px;
   background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
@@ -14,84 +43,224 @@
   border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
-.page-header h1 {
-  font-size: 1.3rem;
+.colet-update .back-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  color: #F8FAFC;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.colet-update .back-btn:hover {
+  background: rgba(148, 163, 184, 0.2);
+}
+
+.colet-update .page-header h1 {
+  font-size: 1.2rem;
   font-weight: 700;
   color: #F8FAFC;
-  margin: 0 0 8px 0;
+  margin: 0;
 }
 
-.awb-display {
-  font-family: 'SF Mono', monospace;
-  font-size: 1rem;
-  color: #A855F7;
-  font-weight: 600;
-}
-
-/* Colet Info */
-.colet-info {
+/* === PICKUP CARD LARGE === */
+.pickup-card-large {
   background: #1E293B;
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 20px;
+  padding: 24px;
   margin-bottom: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.06);
-}
-
-.info-row:last-child {
-  border-bottom: none;
-}
-
-.info-label {
-  color: #94A3B8;
-  font-size: 0.85rem;
-}
-
-.info-value {
-  color: #F8FAFC;
-  font-size: 0.85rem;
-  font-weight: 500;
-  text-align: right;
-}
-
-/* Status Update */
-.status-section {
-  background: #1E293B;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.08);
-}
-
-.section-title {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #64748B;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.awb-large {
+  font-family: 'Courier New', monospace;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #F97316;
+  text-align: center;
+  padding-bottom: 16px;
   margin-bottom: 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
 }
 
+.pickup-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.detail-row .icon {
+  font-size: 1.1rem;
+  width: 24px;
+  text-align: center;
+}
+
+.detail-row .text {
+  flex: 1;
+  color: #E2E8F0;
+  font-size: 0.95rem;
+}
+
+/* Payment Box */
+.payment-box {
+  margin-top: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.15), rgba(234, 179, 8, 0.05));
+  border: 2px solid rgba(234, 179, 8, 0.4);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.payment-label {
+  font-size: 0.9rem;
+  color: #FACC15;
+  margin-bottom: 8px;
+}
+
+.payment-amount {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #FACC15;
+  margin-bottom: 8px;
+}
+
+.payment-status .paid {
+  color: #4ADE80;
+  font-weight: 600;
+}
+
+.payment-status .unpaid {
+  color: #FACC15;
+  font-weight: 600;
+}
+
+/* Confirm Section */
+.confirm-section {
+  background: #1E293B;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.confirm-text {
+  color: #94A3B8;
+  font-size: 0.95rem;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+.confirm-text strong {
+  color: #FACC15;
+}
+
+.confirm-btn {
+  width: 100%;
+  padding: 18px 24px;
+  border: none;
+  border-radius: 14px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.confirm-btn.pickup {
+  background: linear-gradient(135deg, #22C55E, #16A34A);
+  color: white;
+}
+
+.confirm-btn.pickup:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.4);
+}
+
+.confirm-btn.delivery {
+  background: linear-gradient(135deg, #F97316, #EA580C);
+  color: white;
+}
+
+.confirm-btn.delivery:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4);
+}
+
+.confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #94A3B8;
+}
+
+.empty-state button {
+  margin-top: 16px;
+  padding: 12px 24px;
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  color: #F8FAFC;
+  cursor: pointer;
+}
+
+/* === DELIVERY FORM === */
+.delivery-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-section {
+  background: #1E293B;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.form-section h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #F8FAFC;
+  margin: 0 0 16px 0;
+}
+
+/* Status Options */
 .status-options {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 10px;
 }
 
 .status-option {
-  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
   background: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  border: 2px solid rgba(148, 163, 184, 0.15);
   border-radius: 12px;
-  text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.status-option input[type="radio"] {
+  display: none;
 }
 
 .status-option:hover {
@@ -99,130 +268,99 @@
 }
 
 .status-option.selected {
-  background: rgba(168, 85, 247, 0.15);
-  border-color: rgba(168, 85, 247, 0.4);
-}
-
-.status-option .icon {
-  font-size: 1.5rem;
-  margin-bottom: 6px;
-}
-
-.status-option .label {
-  font-size: 0.8rem;
-  color: #E2E8F0;
-  font-weight: 500;
-}
-
-.status-option.delivered {
-  border-color: rgba(34, 197, 94, 0.3);
-}
-
-.status-option.delivered.selected {
   background: rgba(34, 197, 94, 0.15);
-  border-color: rgba(34, 197, 94, 0.5);
-}
-
-.status-option.problem {
-  border-color: rgba(239, 68, 68, 0.3);
+  border-color: #22C55E;
 }
 
 .status-option.problem.selected {
   background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.5);
+  border-color: #EF4444;
 }
 
-/* Notes */
-.notes-section {
-  background: #1E293B;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.08);
+.status-option .option-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #F8FAFC;
+  margin-bottom: 4px;
 }
 
-.notes-input {
+.status-option .option-desc {
+  font-size: 0.8rem;
+  color: #94A3B8;
+}
+
+/* Select Input */
+.select-input {
   width: 100%;
-  padding: 12px;
+  padding: 14px 16px;
   background: #0F172A;
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 10px;
   color: #F8FAFC;
-  font-size: 0.9rem;
-  min-height: 100px;
-  resize: vertical;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-sizing: border-box;
 }
 
-.notes-input:focus {
+.select-input:focus {
   outline: none;
-  border-color: #A855F7;
-}
-
-.notes-input::placeholder {
-  color: #64748B;
+  border-color: #F97316;
 }
 
 /* Signature */
-.signature-section {
-  background: #1E293B;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.08);
+.signature-container {
+  position: relative;
 }
 
-.signature-canvas {
+.signature-container canvas {
   width: 100%;
   height: 150px;
-  background: #0F172A;
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: #F8FAFC;
   border-radius: 10px;
-  margin-bottom: 10px;
+  border: 2px solid rgba(148, 163, 184, 0.2);
+  touch-action: none;
 }
 
-.btn-clear {
-  padding: 8px 16px;
-  background: transparent;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 8px;
-  color: #94A3B8;
-  font-size: 0.8rem;
-  cursor: pointer;
-}
-
-/* Submit Button */
-.btn-submit {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #10B981, #059669);
+.clear-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.9);
   border: none;
-  border-radius: 14px;
+  border-radius: 6px;
   color: white;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.btn-submit:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+/* Checkbox */
+.ramburs-check {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.05));
+  border-color: rgba(34, 197, 94, 0.3);
 }
 
-.btn-submit:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #E2E8F0;
+  font-weight: 600;
 }
 
-/* Loading */
-.loading-state {
-  text-align: center;
-  padding: 40px;
-  color: #94A3B8;
+.checkbox-label input[type="checkbox"] {
+  width: 24px;
+  height: 24px;
+  accent-color: #22C55E;
+  cursor: pointer;
 }
 
+/* Responsive */
 @media (min-width: 768px) {
-  .colet-update-page {
+  .colet-update {
     max-width: 550px;
+    padding: 24px;
   }
 }

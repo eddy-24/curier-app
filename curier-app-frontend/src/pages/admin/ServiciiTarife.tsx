@@ -278,16 +278,17 @@ export default function ServiciiTarife() {
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <button className="btn-edit" onClick={() => openEditServiciu(serviciu)}>
+                      <button className="btn-action btn-edit-action" onClick={() => openEditServiciu(serviciu)} title="Editează">
                         ✏️
                       </button>
                       <button 
-                        className={serviciu.activ ? 'btn-danger' : 'btn-success'}
+                        className={`btn-action ${serviciu.activ ? 'btn-pause-action' : 'btn-play-action'}`}
                         onClick={() => toggleServiciuActiv(serviciu.idServiciu)}
+                        title={serviciu.activ ? 'Dezactivează' : 'Activează'}
                       >
                         {serviciu.activ ? '⏸️' : '▶️'}
                       </button>
-                      <button className="btn-danger" onClick={() => deleteServiciu(serviciu.idServiciu)}>
+                      <button className="btn-action btn-delete-action" onClick={() => deleteServiciu(serviciu.idServiciu)} title="Șterge">
                         🗑️
                       </button>
                     </div>
@@ -331,16 +332,17 @@ export default function ServiciiTarife() {
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <button className="btn-edit" onClick={() => openEditTarif(tarif)}>
+                      <button className="btn-action btn-edit-action" onClick={() => openEditTarif(tarif)} title="Editează">
                         ✏️
                       </button>
                       <button 
-                        className={tarif.activ ? 'btn-danger' : 'btn-success'}
+                        className={`btn-action ${tarif.activ ? 'btn-pause-action' : 'btn-play-action'}`}
                         onClick={() => toggleTarifActiv(tarif.idTarif)}
+                        title={tarif.activ ? 'Dezactivează' : 'Activează'}
                       >
                         {tarif.activ ? '⏸️' : '▶️'}
                       </button>
-                      <button className="btn-danger" onClick={() => deleteTarif(tarif.idTarif)}>
+                      <button className="btn-action btn-delete-action" onClick={() => deleteTarif(tarif.idTarif)} title="Șterge">
                         🗑️
                       </button>
                     </div>

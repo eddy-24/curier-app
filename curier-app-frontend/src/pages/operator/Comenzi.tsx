@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import '../admin/AdminLayout.css';
 import './Comenzi.css';
 
 interface Colet {
@@ -165,8 +166,8 @@ export default function Comenzi() {
           <p>Nu există comenzi {filter !== 'toate' ? `cu statusul "${getStatusLabel(filter)}"` : ''}.</p>
         </div>
       ) : (
-        <div className="table-container">
-          <table className="comenzi-table">
+        <div className="data-table-container">
+          <table className="data-table">
             <thead>
               <tr>
                 <th>ID</th>
@@ -186,21 +187,21 @@ export default function Comenzi() {
                   <td>
                     {comanda.client?.prenume} {comanda.client?.nume}
                     <br />
-                    <small>@{comanda.client?.username}</small>
+                    <small style={{ color: '#64748B' }}>@{comanda.client?.username}</small>
                   </td>
                   <td>
-                    <span className="colete-count">{comanda.colete?.length || 0}</span>
+                    <span className="badge badge-info">{comanda.colete?.length || 0}</span>
                   </td>
                   <td>{comanda.modalitatePlata}</td>
                   <td>
-                    <span className={`status-badge ${getStatusColor(comanda.statusComanda)}`}>
+                    <span className={`badge ${getStatusColor(comanda.statusComanda)}`}>
                       {getStatusLabel(comanda.statusComanda)}
                     </span>
                   </td>
                   <td>
-                    <div className="action-buttons">
-                      <button className="btn-view" onClick={() => openDetails(comanda)}>
-                        Gestionează
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button className="btn-action btn-edit-action" onClick={() => openDetails(comanda)} title="Gestionează">
+                        👁️
                       </button>
                     </div>
                   </td>
@@ -259,127 +260,6 @@ export default function Comenzi() {
                     </a>
                   </div>
                 ))}
-              </div>
-
-              <div className="detail-section">
-                <h3>Schimbă status sau dată livrare</h3>
-                <div className="status-buttons" style={{ flexWrap: 'wrap', gap: 8 }}>
-                  {['noua', 'in_procesare', 'finalizata', 'problema', 'anulata'].map((s) => {
-                    if (s === 'problema') {
-                      return (
-                        <button
-                          key={s}
-                          className={`status-btn ${s} ${selectedComanda.statusComanda === s ? 'current' : ''}`}
-                          onClick={() => setShowProblem(true)}
-                          disabled={selectedComanda.statusComanda === s}
-                        >
-                          Raportează problemă
-                        </button>
-                      );
-                    } else if (s === 'anulata') {
-                      return (
-                        <button
-                          key={s}
-                          className={`status-btn ${s} ${selectedComanda.statusComanda === s ? 'current' : ''}`}
-                          onClick={() => setShowCancel(true)}
-                          disabled={selectedComanda.statusComanda === s}
-                        >
-                          Anulează comandă
-                        </button>
-                      );
-                    } else {
-                      return (
-                        <button
-                          key={s}
-                          className={`status-btn ${s} ${selectedComanda.statusComanda === s ? 'current' : ''}`}
-                          onClick={() => handleStatusChange(selectedComanda.idComanda, s)}
-                          disabled={selectedComanda.statusComanda === s}
-                        >
-                          {getStatusLabel(s)}
-                        </button>
-                      );
-                    }
-                  })}
-                  <button
-                    className="status-btn date"
-                    style={{ background: '#e0e0ff', color: '#222', border: '1px solid #b3b3ff' }}
-                    onClick={() => setShowDate(true)}
-                  >
-                    Schimbă data livrare
-                  </button>
-                </div>
-                                {showDate && (
-                                  <div className="problem-modal">
-                                    <h4>Schimbă data de livrare</h4>
-                                    <input
-                                      type="date"
-                                      value={newDate}
-                                      onChange={e => setNewDate(e.target.value)}
-                                      min={new Date().toISOString().split('T')[0]}
-                                      style={{ width: '100%', marginBottom: 8 }}
-                                    />
-                                    <div style={{ display: 'flex', gap: 8 }}>
-                                      <button
-                                        className="btn-primary"
-                                        disabled={!newDate || dateLoading}
-                                        onClick={() => handleChangeDate(selectedComanda.idComanda, newDate)}
-                                      >
-                                        Confirmă
-                                      </button>
-                                      <button className="btn-secondary" onClick={() => setShowDate(false)} disabled={dateLoading}>
-                                        Renunță
-                                      </button>
-                                    </div>
-                                  </div>
-                                )}
-                {showProblem && (
-                  <div className="problem-modal">
-                    <h4>Descrie problema</h4>
-                    <textarea
-                      value={problemText}
-                      onChange={e => setProblemText(e.target.value)}
-                      placeholder="Descrie problema comenzii..."
-                      rows={3}
-                      style={{ width: '100%' }}
-                    />
-                    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                      <button
-                        className="btn-primary"
-                        disabled={!problemText.trim() || problemLoading}
-                        onClick={() => handleStatusChange(selectedComanda.idComanda, 'problema', problemText)}
-                      >
-                        Trimite
-                      </button>
-                      <button className="btn-secondary" onClick={() => setShowProblem(false)} disabled={problemLoading}>
-                        Renunță
-                      </button>
-                    </div>
-                  </div>
-                )}
-                {showCancel && (
-                  <div className="problem-modal">
-                    <h4>Motiv anulare comandă</h4>
-                    <textarea
-                      value={cancelText}
-                      onChange={e => setCancelText(e.target.value)}
-                      placeholder="Motivul anulării..."
-                      rows={3}
-                      style={{ width: '100%' }}
-                    />
-                    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                      <button
-                        className="btn-danger"
-                        disabled={!cancelText.trim() || cancelLoading}
-                        onClick={() => handleStatusChange(selectedComanda.idComanda, 'anulata', cancelText)}
-                      >
-                        Confirmă anularea
-                      </button>
-                      <button className="btn-secondary" onClick={() => setShowCancel(false)} disabled={cancelLoading}>
-                        Renunță
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 

@@ -418,8 +418,11 @@ public class AdminService {
         LocalDateTime start = startDate.atStartOfDay();
         LocalDateTime end = endDate.plusDays(1).atStartOfDay();
         
+        // Toate comenzile
+        List<Comanda> toateComenzi = comandaRepository.findAll();
+        
         // Comenzi în perioadă
-        List<Comanda> comenziInPerioda = comandaRepository.findAll().stream()
+        List<Comanda> comenziInPerioda = toateComenzi.stream()
                 .filter(c -> {
                     LocalDateTime dataCreare = c.getDataCreare();
                     return dataCreare != null && 
@@ -437,8 +440,16 @@ public class AdminService {
             comenziPeStatus.merge(status, 1L, Long::sum);
         });
         
+        long comenziFinalizate = comenziPeStatus.getOrDefault("finalizata", 0L) + 
+                                  comenziPeStatus.getOrDefault("livrata", 0L);
+        long comenziAnulate = comenziPeStatus.getOrDefault("anulata", 0L);
+        double rataSuccesComenzi = totalComenzi > 0 ? (double) comenziFinalizate / totalComenzi * 100 : 0;
+        
+        // Toate coletele
+        List<Colet> toateColete = coletRepository.findAll();
+        
         // Colete în perioadă
-        List<Colet> coleteInPerioda = coletRepository.findAll().stream()
+        List<Colet> coleteInPerioda = toateColete.stream()
                 .filter(c -> {
                     if (c.getComanda() == null) return false;
                     LocalDateTime dataCreare = c.getComanda().getDataCreare();
@@ -452,23 +463,159 @@ public class AdminService {
         long coleteLivrate = coleteInPerioda.stream()
                 .filter(c -> "livrat".equalsIgnoreCase(c.getStatusColet()))
                 .count();
+        long coleteReturnat = coleteInPerioda.stream()
+                .filter(c -> "returnat".equalsIgnoreCase(c.getStatusColet()))
+                .count();
+        long coleteEsuat = coleteInPerioda.stream()
+                .filter(c -> "esuat".equalsIgnoreCase(c.getStatusColet()) || 
+                             "nereusit".equalsIgnoreCase(c.getStatusColet()))
+                .count();
+        long coleteAnulate = coleteInPerioda.stream()
+                .filter(c -> "anulat".equalsIgnoreCase(c.getStatusColet()))
+                .count();
         
         double rataLivrare = totalColete > 0 ? (double) coleteLivrate / totalColete * 100 : 0;
         
-        // Venituri estimate (dacă există informații despre preț)
-        // Pentru moment, folosim valori estimate
-        BigDecimal venituriEstimate = BigDecimal.valueOf(totalComenzi * 25); // 25 RON medie per comandă
+        // Timp mediu livrare (în ore) - calculat din coletele livrate
+        double timpMediuLivrare = coleteInPerioda.stream()
+                .filter(c -> "livrat".equalsIgnoreCase(c.getStatusColet()) && 
+                             c.getDataLivrare() != null && 
+                             c.getComanda() != null && 
+                             c.getComanda().getDataCreare() != null)
+                .mapToLong(c -> java.time.Duration.between(
+                        c.getComanda().getDataCreare(), 
+                        c.getDataLivrare()
+                ).toHours())
+                .average()
+                .orElse(0);
         
+        // Venituri - sumă din pretul declarat al coletelor livrate
+        BigDecimal venituriLuna = coleteInPerioda.stream()
+                .filter(c -> "livrat".equalsIgnoreCase(c.getStatusColet()) && c.getPretDeclarat() != null)
+                .map(Colet::getPretDeclarat)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        // Venituri an precedent (pentru comparație)
+        LocalDateTime startAnPrecedent = startDate.minusYears(1).atStartOfDay();
+        LocalDateTime endAnPrecedent = endDate.minusYears(1).plusDays(1).atStartOfDay();
+        BigDecimal venituriAnPrecedent = toateColete.stream()
+                .filter(c -> {
+                    if (c.getComanda() == null) return false;
+                    LocalDateTime dataCreare = c.getComanda().getDataCreare();
+                    return dataCreare != null && 
+                           dataCreare.isAfter(startAnPrecedent) && 
+                           dataCreare.isBefore(endAnPrecedent) &&
+                           "livrat".equalsIgnoreCase(c.getStatusColet()) &&
+                           c.getPretDeclarat() != null;
+                })
+                .map(Colet::getPretDeclarat)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        double crestere = venituriAnPrecedent.compareTo(BigDecimal.ZERO) > 0 
+                ? venituriLuna.subtract(venituriAnPrecedent)
+                    .divide(venituriAnPrecedent, 4, java.math.RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .doubleValue()
+                : 0;
+        
+        // Curieri activi (cu colete în perioadă)
+        long curieriActivi = coleteInPerioda.stream()
+                .filter(c -> c.getCurier() != null)
+                .map(c -> c.getCurier().getIdUtilizator())
+                .distinct()
+                .count();
+        
+        // Media colete pe curier
+        double coletePeCurier = curieriActivi > 0 ? (double) totalColete / curieriActivi : 0;
+        
+        // Populez răspunsul
         rapoarte.put("totalComenzi", totalComenzi);
+        rapoarte.put("comenziFinalizate", comenziFinalizate);
+        rapoarte.put("comenziAnulate", comenziAnulate);
+        rapoarte.put("rataSucces", Math.round(rataSuccesComenzi * 100.0) / 100.0);
         rapoarte.put("comenziPeStatus", comenziPeStatus);
+        
         rapoarte.put("totalColete", totalColete);
         rapoarte.put("coleteLivrate", coleteLivrate);
+        rapoarte.put("coleteReturnat", coleteReturnat);
+        rapoarte.put("coleteEsuat", coleteEsuat);
+        rapoarte.put("coleteAnulate", coleteAnulate);
+        
         rapoarte.put("rataLivrare", Math.round(rataLivrare * 100.0) / 100.0);
-        rapoarte.put("venituriEstimate", venituriEstimate);
+        rapoarte.put("timpMediuLivrare", Math.round(timpMediuLivrare * 10.0) / 10.0);
+        rapoarte.put("livrareLaTimp", Math.round(rataLivrare * 100.0) / 100.0); // Same as rata livrare for now
+        
+        rapoarte.put("venituriLuna", venituriLuna);
+        rapoarte.put("venituriAnPrecedent", venituriAnPrecedent);
+        rapoarte.put("crestere", Math.round(crestere * 100.0) / 100.0);
+        
+        rapoarte.put("curieriActivi", curieriActivi);
+        rapoarte.put("coletePeCurier", Math.round(coletePeCurier * 10.0) / 10.0);
+        
         rapoarte.put("perioadaStart", startDate);
         rapoarte.put("perioadaEnd", endDate);
         
         return rapoarte;
+    }
+    
+    public List<Map<String, Object>> getRapoarteLunare(int an) {
+        List<Map<String, Object>> rapoarteLunare = new ArrayList<>();
+        
+        List<Comanda> toateComenzi = comandaRepository.findAll();
+        List<Colet> toateColete = coletRepository.findAll();
+        
+        String[] luni = {"Ian", "Feb", "Mar", "Apr", "Mai", "Iun", "Iul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+        
+        for (int luna = 1; luna <= 12; luna++) {
+            final int lunaFinala = luna;
+            Map<String, Object> raport = new HashMap<>();
+            
+            LocalDateTime startLuna = LocalDate.of(an, luna, 1).atStartOfDay();
+            LocalDateTime endLuna = startLuna.plusMonths(1);
+            
+            // Comenzi în luna
+            long comenziLuna = toateComenzi.stream()
+                    .filter(c -> {
+                        LocalDateTime data = c.getDataCreare();
+                        return data != null && data.isAfter(startLuna) && data.isBefore(endLuna);
+                    })
+                    .count();
+            
+            // Colete livrate în luna
+            long coleteLivrateLuna = toateColete.stream()
+                    .filter(c -> {
+                        if (c.getComanda() == null) return false;
+                        LocalDateTime data = c.getComanda().getDataCreare();
+                        return data != null && 
+                               data.isAfter(startLuna) && 
+                               data.isBefore(endLuna) &&
+                               "livrat".equalsIgnoreCase(c.getStatusColet());
+                    })
+                    .count();
+            
+            // Venituri luna
+            BigDecimal venituriLuna = toateColete.stream()
+                    .filter(c -> {
+                        if (c.getComanda() == null) return false;
+                        LocalDateTime data = c.getComanda().getDataCreare();
+                        return data != null && 
+                               data.isAfter(startLuna) && 
+                               data.isBefore(endLuna) &&
+                               "livrat".equalsIgnoreCase(c.getStatusColet()) &&
+                               c.getPretDeclarat() != null;
+                    })
+                    .map(Colet::getPretDeclarat)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            raport.put("luna", luni[luna - 1]);
+            raport.put("comenzi", comenziLuna);
+            raport.put("venituri", venituriLuna);
+            raport.put("coleteLivrate", coleteLivrateLuna);
+            
+            rapoarteLunare.add(raport);
+        }
+        
+        return rapoarteLunare;
     }
 
     public List<Map<String, Object>> getPerformantaCurieri(LocalDate startDate, LocalDate endDate) {

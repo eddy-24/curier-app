@@ -379,6 +379,7 @@ select.form-control {
   gap: 1rem;
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
+  align-items: stretch;
 }
 
 .search-box {
@@ -391,6 +392,8 @@ select.form-control {
   background: #0F172A;
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 10px;
+  height: 48px;
+  box-sizing: border-box;
 }
 
 .search-box .search-icon {
@@ -419,6 +422,8 @@ select.form-control {
   font-size: 0.9rem;
   cursor: pointer;
   min-width: 120px;
+  height: 48px;
+  box-sizing: border-box;
 }
 
 .filters-bar select:focus {
@@ -678,6 +683,31 @@ select.form-control {
   text-transform: uppercase;
 }
 
+/* User Cell in Table */
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-cell .user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.user-cell .username {
+  font-size: 12px;
+  color: #64748B;
+}
+
 /* Table Container */
 .table-container {
   background: #1E293B;
@@ -689,6 +719,8 @@ select.form-control {
 .data-table {
   width: 100%;
   border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed;
 }
 
 .data-table th {
@@ -715,7 +747,8 @@ select.form-control {
   padding: 1rem 1.25rem;
   font-size: 0.9rem;
   color: #E2E8F0;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.06);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  vertical-align: middle;
 }
 
 .data-table tbody tr {
@@ -732,7 +765,11 @@ select.form-control {
 
 /* Action Buttons in Table */
 .actions-cell {
-  display: flex;
+  text-align: right;
+}
+
+.actions-cell > div {
+  display: inline-flex;
   gap: 0.5rem;
 }
 

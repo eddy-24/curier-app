@@ -55,16 +55,17 @@
 
 /* Stats Grid */
 .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .stat-card {
   background: #1E293B;
   border-radius: 16px;
-  padding: 16px;
+  padding: 16px 24px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -72,6 +73,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
+  min-width: 160px;
+  flex: 0 1 auto;
 }
 
 .stat-card:hover {
@@ -126,6 +129,16 @@
   color: #94A3B8;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+}
+
+.stat-cash {
+  font-size: 0.7rem;
+  color: #22C55E;
+  font-weight: 600;
+  margin-top: 4px;
+  background: rgba(34, 197, 94, 0.15);
+  padding: 4px 8px;
+  border-radius: 6px;
 }
 
 /* Quick Actions */
@@ -358,6 +371,9 @@
   border: 1px solid rgba(148, 163, 184, 0.08);
   cursor: pointer;
   transition: all 0.2s ease;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .ramburs-section:hover {
@@ -377,21 +393,27 @@
 }
 
 .ramburs-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
 }
 
 .ramburs-card {
   background: rgba(15, 23, 42, 0.6);
   border-radius: 12px;
-  padding: 16px;
+  padding: 16px 32px;
   text-align: center;
   border: 1px solid rgba(148, 163, 184, 0.05);
+  min-width: 180px;
+  flex: 0 1 auto;
 }
 
 .ramburs-card.pending {
   border-left: 4px solid #F59E0B;
+}
+
+.ramburs-card.pickup-cash {
+  border-left: 4px solid #8B5CF6;
 }
 
 .ramburs-card.collected {
@@ -418,6 +440,10 @@
 
 .ramburs-card.pending .ramburs-value {
   color: #FDE68A;
+}
+
+.ramburs-card.pickup-cash .ramburs-value {
+  color: #C4B5FD;
 }
 
 .ramburs-card.collected .ramburs-value {

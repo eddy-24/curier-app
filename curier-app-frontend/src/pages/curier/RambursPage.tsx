@@ -7,6 +7,8 @@ interface RambursItem {
   suma: number;
   status: string;
   destinatar?: string;
+  expeditor?: string;
+  tip?: string; // 'ramburs' sau 'plata_pickup'
 }
 
 interface RambursData {
@@ -129,23 +131,33 @@ const RambursPage = () => {
             </div>
           ) : (
             data?.neincasate?.map(item => (
-              <div key={item.idColet} className="ramburs-item pending">
+              <div key={`${item.idColet}-${item.tip}`} className={`ramburs-item pending ${item.tip}`}>
                 <div className="item-header">
                   <span className="awb">{item.codAwb}</span>
                   <div className="item-actions">
                     <span className="suma">{item.suma?.toFixed(2)} RON</span>
-                    <button 
-                      className="collect-button"
-                      onClick={() => incaseazaRamburs(item.idColet, item.suma)}
-                    >
-                      Încasează
-                    </button>
+                    {item.tip === 'ramburs' && (
+                      <button 
+                        className="collect-button"
+                        onClick={() => incaseazaRamburs(item.idColet, item.suma)}
+                      >
+                        Încasează
+                      </button>
+                    )}
                   </div>
                 </div>
                 {item.destinatar && (
                   <p className="destinatar">📍 {item.destinatar}</p>
                 )}
-                <span className="status-badge">{item.status.replace('_', ' ')}</span>
+                {item.expeditor && (
+                  <p className="destinatar">📦 {item.expeditor}</p>
+                )}
+                <div className="item-badges">
+                  <span className={`type-badge ${item.tip}`}>
+                    {item.tip === 'plata_pickup' ? '💳 Plată pickup' : '💰 Ramburs'}
+                  </span>
+                  <span className="status-badge">{item.status.replace('_', ' ')}</span>
+                </div>
               </div>
             ))
           )
@@ -158,12 +170,17 @@ const RambursPage = () => {
             </div>
           ) : (
             data?.incasate?.map(item => (
-              <div key={item.idColet} className="ramburs-item collected">
+              <div key={`${item.idColet}-${item.tip}`} className={`ramburs-item collected ${item.tip}`}>
                 <div className="item-header">
                   <span className="awb">{item.codAwb}</span>
                   <span className="suma">{item.suma?.toFixed(2)} RON</span>
                 </div>
-                <span className="collected-badge">✅ Încasat</span>
+                <div className="item-badges">
+                  <span className={`type-badge ${item.tip}`}>
+                    {item.tip === 'plata_pickup' ? '💳 Plată pickup' : '💰 Ramburs'}
+                  </span>
+                  <span className="collected-badge">✅ Încasat</span>
+                </div>
               </div>
             ))
           )

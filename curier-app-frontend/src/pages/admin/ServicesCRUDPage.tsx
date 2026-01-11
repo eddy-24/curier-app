@@ -2,23 +2,21 @@ import { useState, useEffect } from 'react';
 import './CRUDPage.css';
 
 interface Serviciu {
-  idServiciu?: number;
-  numeServiciu: string;
+  id?: number;
+  nume: string;
   descriere: string;
   pretBaza: number;
-  pretKg: number;
-  pretKm: number;
-  timpEstimatLivrare: string;
+  pretPerKg: number;
+  timpLivrare: string;
   activ: boolean;
 }
 
 const INITIAL_SERVICIU: Serviciu = {
-  numeServiciu: '',
+  nume: '',
   descriere: '',
   pretBaza: 0,
-  pretKg: 0,
-  pretKm: 0,
-  timpEstimatLivrare: '',
+  pretPerKg: 0,
+  timpLivrare: '',
   activ: true
 };
 
@@ -47,18 +45,18 @@ export default function ServicesCRUDPage() {
       } else {
         // Date demo dacă API-ul nu returnează nimic
         setServicii([
-          { idServiciu: 1, numeServiciu: 'Standard', descriere: 'Livrare în 2-3 zile lucrătoare', pretBaza: 15, pretKg: 2, pretKm: 0.5, timpEstimatLivrare: '2-3 zile', activ: true },
-          { idServiciu: 2, numeServiciu: 'Express', descriere: 'Livrare în 24 ore', pretBaza: 25, pretKg: 3, pretKm: 1, timpEstimatLivrare: '24 ore', activ: true },
-          { idServiciu: 3, numeServiciu: 'Same Day', descriere: 'Livrare în aceeași zi', pretBaza: 45, pretKg: 5, pretKm: 1.5, timpEstimatLivrare: 'Aceeași zi', activ: true },
-          { idServiciu: 4, numeServiciu: 'Economy', descriere: 'Livrare în 5-7 zile', pretBaza: 10, pretKg: 1.5, pretKm: 0.3, timpEstimatLivrare: '5-7 zile', activ: false },
+          { id: 1, nume: 'Standard', descriere: 'Livrare în 2-3 zile lucrătoare', pretBaza: 15, pretPerKg: 2, timpLivrare: '2-3 zile', activ: true },
+          { id: 2, nume: 'Express', descriere: 'Livrare în 24 ore', pretBaza: 25, pretPerKg: 3, timpLivrare: '24 ore', activ: true },
+          { id: 3, nume: 'Same Day', descriere: 'Livrare în aceeași zi', pretBaza: 45, pretPerKg: 5, timpLivrare: 'Aceeași zi', activ: true },
+          { id: 4, nume: 'Economy', descriere: 'Livrare în 5-7 zile', pretBaza: 10, pretPerKg: 1.5, timpLivrare: '5-7 zile', activ: false },
         ]);
       }
     } catch (error) {
       console.error('Eroare la încărcare servicii:', error);
       // Date demo pentru fallback
       setServicii([
-        { idServiciu: 1, numeServiciu: 'Standard', descriere: 'Livrare în 2-3 zile lucrătoare', pretBaza: 15, pretKg: 2, pretKm: 0.5, timpEstimatLivrare: '2-3 zile', activ: true },
-        { idServiciu: 2, numeServiciu: 'Express', descriere: 'Livrare în 24 ore', pretBaza: 25, pretKg: 3, pretKm: 1, timpEstimatLivrare: '24 ore', activ: true },
+        { id: 1, nume: 'Standard', descriere: 'Livrare în 2-3 zile lucrătoare', pretBaza: 15, pretPerKg: 2, timpLivrare: '2-3 zile', activ: true },
+        { id: 2, nume: 'Express', descriere: 'Livrare în 24 ore', pretBaza: 25, pretPerKg: 3, timpLivrare: '24 ore', activ: true },
       ]);
     } finally {
       setLoading(false);
@@ -67,7 +65,7 @@ export default function ServicesCRUDPage() {
 
   const filteredServicii = servicii.filter(s => {
     const matchSearch = searchTerm === '' || 
-      s.numeServiciu.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.nume.toLowerCase().includes(searchTerm.toLowerCase()) ||
       s.descriere.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchActiv = filterActiv === '' || 
@@ -118,7 +116,7 @@ export default function ServicesCRUDPage() {
     setSaving(true);
 
     const url = editMode 
-      ? `http://localhost:8081/api/admin/servicii/${selectedServiciu?.idServiciu}`
+      ? `http://localhost:8081/api/admin/servicii/${selectedServiciu?.id}`
       : 'http://localhost:8081/api/admin/servicii';
     
     const method = editMode ? 'PUT' : 'POST';
@@ -141,10 +139,10 @@ export default function ServicesCRUDPage() {
       // Simulare salvare locală pentru demo
       if (editMode && selectedServiciu) {
         setServicii(prev => prev.map(s => 
-          s.idServiciu === selectedServiciu.idServiciu ? { ...formData, idServiciu: selectedServiciu.idServiciu } : s
+          s.id === selectedServiciu.id ? { ...formData, id: selectedServiciu.id } : s
         ));
       } else {
-        setServicii(prev => [...prev, { ...formData, idServiciu: Date.now() }]);
+        setServicii(prev => [...prev, { ...formData, id: Date.now() }]);
       }
       closeModal();
     } finally {
@@ -162,11 +160,11 @@ export default function ServicesCRUDPage() {
         fetchServicii();
       } else {
         // Simulare ștergere locală
-        setServicii(prev => prev.filter(s => s.idServiciu !== id));
+        setServicii(prev => prev.filter(s => s.id !== id));
       }
     } catch (error) {
       console.error('Eroare la ștergere:', error);
-      setServicii(prev => prev.filter(s => s.idServiciu !== id));
+      setServicii(prev => prev.filter(s => s.id !== id));
     } finally {
       setDeleteConfirm(null);
     }
@@ -174,7 +172,7 @@ export default function ServicesCRUDPage() {
 
   const toggleActiv = async (serviciu: Serviciu) => {
     try {
-      await fetch(`http://localhost:8081/api/admin/servicii/${serviciu.idServiciu}`, {
+      await fetch(`http://localhost:8081/api/admin/servicii/${serviciu.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...serviciu, activ: !serviciu.activ })
@@ -183,7 +181,7 @@ export default function ServicesCRUDPage() {
     } catch (error) {
       // Actualizare locală
       setServicii(prev => prev.map(s => 
-        s.idServiciu === serviciu.idServiciu ? { ...s, activ: !s.activ } : s
+        s.id === serviciu.id ? { ...s, activ: !s.activ } : s
       ));
     }
   };
@@ -239,12 +237,12 @@ export default function ServicesCRUDPage() {
       <div className="cards-grid">
         {filteredServicii.map(serviciu => (
           <div 
-            key={serviciu.idServiciu} 
+            key={serviciu.id} 
             className={`service-card ${!serviciu.activ ? 'inactive' : ''}`}
           >
             <div className="card-header">
               <div className="card-title">
-                <h3>{serviciu.numeServiciu}</h3>
+                <h3>{serviciu.nume}</h3>
                 <span className={`status-badge ${serviciu.activ ? 'active' : 'inactive'}`}>
                   {serviciu.activ ? 'Activ' : 'Inactiv'}
                 </span>
@@ -266,7 +264,7 @@ export default function ServicesCRUDPage() {
                 </button>
                 <button 
                   className="btn-icon btn-delete"
-                  onClick={() => setDeleteConfirm(serviciu.idServiciu!)}
+                  onClick={() => setDeleteConfirm(serviciu.id!)}
                   title="Șterge"
                 >
                   🗑️
@@ -279,7 +277,7 @@ export default function ServicesCRUDPage() {
             <div className="card-details">
               <div className="detail-row">
                 <span className="detail-label">⏱️ Timp livrare</span>
-                <span className="detail-value">{serviciu.timpEstimatLivrare}</span>
+                <span className="detail-value">{serviciu.timpLivrare}</span>
               </div>
               <div className="detail-row">
                 <span className="detail-label">💰 Preț bază</span>
@@ -287,16 +285,12 @@ export default function ServicesCRUDPage() {
               </div>
               <div className="detail-row">
                 <span className="detail-label">⚖️ Preț/kg</span>
-                <span className="detail-value">{serviciu.pretKg} RON</span>
-              </div>
-              <div className="detail-row">
-                <span className="detail-label">📍 Preț/km</span>
-                <span className="detail-value">{serviciu.pretKm} RON</span>
+                <span className="detail-value">{serviciu.pretPerKg} RON</span>
               </div>
             </div>
 
             {/* Delete Confirmation */}
-            {deleteConfirm === serviciu.idServiciu && (
+            {deleteConfirm === serviciu.id && (
               <div className="delete-confirm-overlay">
                 <div className="delete-confirm-box">
                   <p>Sigur vrei să ștergi acest serviciu?</p>
@@ -309,7 +303,7 @@ export default function ServicesCRUDPage() {
                     </button>
                     <button 
                       className="btn btn-danger"
-                      onClick={() => handleDelete(serviciu.idServiciu!)}
+                      onClick={() => handleDelete(serviciu.id!)}
                     >
                       Șterge
                     </button>
@@ -342,8 +336,8 @@ export default function ServicesCRUDPage() {
                   <label>Nume Serviciu *</label>
                   <input
                     type="text"
-                    name="numeServiciu"
-                    value={formData.numeServiciu}
+                    name="nume"
+                    value={formData.nume}
                     onChange={handleInputChange}
                     placeholder="Ex: Express, Standard..."
                     required
@@ -378,8 +372,8 @@ export default function ServicesCRUDPage() {
                   <label>Preț per Kg (RON)</label>
                   <input
                     type="number"
-                    name="pretKg"
-                    value={formData.pretKg}
+                    name="pretPerKg"
+                    value={formData.pretPerKg}
                     onChange={handleInputChange}
                     step="0.01"
                     min="0"
@@ -387,23 +381,11 @@ export default function ServicesCRUDPage() {
                 </div>
 
                 <div className="form-group">
-                  <label>Preț per Km (RON)</label>
-                  <input
-                    type="number"
-                    name="pretKm"
-                    value={formData.pretKm}
-                    onChange={handleInputChange}
-                    step="0.01"
-                    min="0"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Timp Estimat Livrare *</label>
+                  <label>Timp Livrare *</label>
                   <input
                     type="text"
-                    name="timpEstimatLivrare"
-                    value={formData.timpEstimatLivrare}
+                    name="timpLivrare"
+                    value={formData.timpLivrare}
                     onChange={handleInputChange}
                     placeholder="Ex: 24 ore, 2-3 zile..."
                     required

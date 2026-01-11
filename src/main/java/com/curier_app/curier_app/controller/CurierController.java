@@ -31,6 +31,12 @@ public class CurierController {
     
     @Autowired
     private AdresaRepository adresaRepository;
+    
+    @Autowired
+    private FacturaRepository facturaRepository;
+    
+    @Autowired
+    private RutaCurierRepository rutaCurierRepository;
 
     // ==================== DASHBOARD ====================
     
@@ -44,20 +50,27 @@ public class CurierController {
         
         LocalDate azi = LocalDate.now();
         
-        // Comenzile asignate curierului
-        List<Comanda> comenziCurier = comandaRepository.findAll().stream()
-                .filter(c -> c.getCurier() != null && c.getCurier().getIdUtilizator().equals(curierId))
-                .collect(Collectors.toList());
-        
-        // Coletele din comenzile curierului
+        // Coletele asignate curierului (fie direct pe colet, fie prin comandă)
         List<Colet> coleteCurier = coletRepository.findAll().stream()
-                .filter(c -> comenziCurier.stream()
-                        .anyMatch(cmd -> cmd.getIdComanda().equals(c.getComanda().getIdComanda())))
+                .filter(c -> {
+                    // Verifică dacă curierul e asignat direct pe colet
+                    if (c.getCurier() != null && c.getCurier().getIdUtilizator().equals(curierId)) {
+                        return true;
+                    }
+                    // Sau dacă curierul e asignat pe comandă
+                    if (c.getComanda() != null && c.getComanda().getCurier() != null 
+                            && c.getComanda().getCurier().getIdUtilizator().equals(curierId)) {
+                        return true;
+                    }
+                    return false;
+                })
                 .collect(Collectors.toList());
         
-        // Pickup-uri azi (colete in_asteptare sau ridicat)
+        // Pickup-uri azi (colete in_asteptare, asteptare_plata sau preluat_curier)
         long pickupuriAzi = coleteCurier.stream()
-                .filter(c -> c.getStatusColet().equals("in_asteptare") || c.getStatusColet().equals("ridicat"))
+                .filter(c -> c.getStatusColet().equals("in_asteptare") 
+                        || c.getStatusColet().equals("asteptare_plata")
+                        || c.getStatusColet().equals("preluat_curier"))
                 .count();
         
         // Livrări azi (colete in_tranzit sau in_livrare)
@@ -79,12 +92,40 @@ public class CurierController {
                 .map(Colet::getPretDeclarat)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         
-        // Ramburs încasat azi (colete livrate azi cu valoare)
+        // Ramburs încasat azi (colete livrate azi cu valoare + plăți cash încasate de la pickup-uri)
         BigDecimal rambursIncasatAzi = coleteCurier.stream()
                 .filter(c -> c.getStatusColet().equals("livrat"))
                 .filter(c -> c.getPretDeclarat() != null && c.getPretDeclarat().compareTo(BigDecimal.ZERO) > 0)
                 .map(Colet::getPretDeclarat)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        // Adaugă plățile cash încasate de la pickup-uri (dacă coletul nu mai e în asteptare_plata)
+        for (Colet colet : coleteCurier) {
+            if (colet.getComanda() != null && "cash".equals(colet.getComanda().getModalitatePlata())) {
+                // Dacă nu mai e în asteptare_plata, înseamnă că plata a fost încasată
+                if (!"asteptare_plata".equals(colet.getStatusColet())) {
+                    Optional<Factura> facturaOpt = facturaRepository.findByComandaId(colet.getComanda().getIdComanda());
+                    if (facturaOpt.isPresent()) {
+                        rambursIncasatAzi = rambursIncasatAzi.add(facturaOpt.get().getSumaTotala());
+                    }
+                }
+            }
+        }
+        
+        // Sumă de încasat de la pickup-uri (doar colete în asteptare_plata)
+        BigDecimal sumaDeIncasatPickup = BigDecimal.ZERO;
+        for (Colet colet : coleteCurier) {
+            // Doar coletele care așteaptă plata
+            if (colet.getStatusColet().equals("asteptare_plata")) {
+                // Verifică dacă e plată cash
+                if (colet.getComanda() != null && "cash".equals(colet.getComanda().getModalitatePlata())) {
+                    Optional<Factura> facturaOpt = facturaRepository.findByComandaId(colet.getComanda().getIdComanda());
+                    if (facturaOpt.isPresent()) {
+                        sumaDeIncasatPickup = sumaDeIncasatPickup.add(facturaOpt.get().getSumaTotala());
+                    }
+                }
+            }
+        }
         
         stats.put("pickupuriAzi", pickupuriAzi);
         stats.put("livrariAzi", livrariAzi);
@@ -92,6 +133,7 @@ public class CurierController {
         stats.put("totalColete", coleteCurier.size());
         stats.put("rambursDeIncasat", rambursDeIncasat);
         stats.put("rambursIncasatAzi", rambursIncasatAzi);
+        stats.put("sumaDeIncasatPickup", sumaDeIncasatPickup);
         
         return ResponseEntity.ok(stats);
     }
@@ -104,14 +146,23 @@ public class CurierController {
      */
     @GetMapping("/{curierId}/pickups")
     public ResponseEntity<List<Map<String, Object>>> getPickups(@PathVariable Long curierId) {
-        List<Comanda> comenziCurier = comandaRepository.findAll().stream()
-                .filter(c -> c.getCurier() != null && c.getCurier().getIdUtilizator().equals(curierId))
-                .collect(Collectors.toList());
-        
+        // Găsește coletele asignate curierului (fie direct pe colet, fie prin comandă)
         List<Colet> pickups = coletRepository.findAll().stream()
-                .filter(c -> comenziCurier.stream()
-                        .anyMatch(cmd -> cmd.getIdComanda().equals(c.getComanda().getIdComanda())))
-                .filter(c -> c.getStatusColet().equals("in_asteptare") || c.getStatusColet().equals("ridicat"))
+                .filter(c -> {
+                    // Verifică dacă curierul e asignat direct pe colet
+                    if (c.getCurier() != null && c.getCurier().getIdUtilizator().equals(curierId)) {
+                        return true;
+                    }
+                    // Sau dacă curierul e asignat pe comandă
+                    if (c.getComanda() != null && c.getComanda().getCurier() != null 
+                            && c.getComanda().getCurier().getIdUtilizator().equals(curierId)) {
+                        return true;
+                    }
+                    return false;
+                })
+                .filter(c -> c.getStatusColet().equals("in_asteptare") 
+                        || c.getStatusColet().equals("asteptare_plata")
+                        || c.getStatusColet().equals("preluat_curier"))
                 .collect(Collectors.toList());
         
         List<Map<String, Object>> result = pickups.stream()
@@ -119,6 +170,64 @@ public class CurierController {
                 .collect(Collectors.toList());
         
         return ResponseEntity.ok(result);
+    }
+    
+    /**
+     * POST /api/curier/{curierId}/colet/{coletId}/incaseaza-plata
+     * Curierul încasează plata numerar și coletul devine gata de ridicare
+     */
+    @PostMapping("/{curierId}/colet/{coletId}/incaseaza-plata")
+    public ResponseEntity<Map<String, Object>> incasarePlata(
+            @PathVariable Long curierId,
+            @PathVariable Long coletId) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        // Găsește coletul
+        Optional<Colet> coletOpt = coletRepository.findById(coletId);
+        if (coletOpt.isEmpty()) {
+            response.put("success", false);
+            response.put("message", "Coletul nu a fost găsit");
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        Colet colet = coletOpt.get();
+        
+        // Verifică că statusul este "asteptare_plata"
+        if (!"asteptare_plata".equals(colet.getStatusColet())) {
+            response.put("success", false);
+            response.put("message", "Coletul nu este în așteptare plată");
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        // Actualizează statusul coletului la "in_asteptare" (gata de ridicare)
+        colet.setStatusColet("in_asteptare");
+        coletRepository.save(colet);
+        
+        // Marchează factura ca achitată
+        Comanda comanda = colet.getComanda();
+        if (comanda != null) {
+            Optional<Factura> facturaOpt = facturaRepository.findByComandaId(comanda.getIdComanda());
+            if (facturaOpt.isPresent()) {
+                Factura factura = facturaOpt.get();
+                factura.setStatusPlata("achitat");
+                facturaRepository.save(factura);
+            }
+        }
+        
+        // Adaugă eveniment de tracking
+        TrackingEvent event = new TrackingEvent();
+        event.setColet(colet);
+        event.setDataEvent(LocalDateTime.now());
+        event.setStatus("plata_incasata");
+        event.setDescriere("Plata în numerar a fost încasată de curier. Coletul este gata de ridicare.");
+        trackingEventRepository.save(event);
+        
+        response.put("success", true);
+        response.put("message", "Plata a fost încasată cu succes");
+        response.put("newStatus", "in_asteptare");
+        
+        return ResponseEntity.ok(response);
     }
 
     // ==================== LIVRĂRI AZI ====================
@@ -129,13 +238,20 @@ public class CurierController {
      */
     @GetMapping("/{curierId}/livrari")
     public ResponseEntity<List<Map<String, Object>>> getLivrari(@PathVariable Long curierId) {
-        List<Comanda> comenziCurier = comandaRepository.findAll().stream()
-                .filter(c -> c.getCurier() != null && c.getCurier().getIdUtilizator().equals(curierId))
-                .collect(Collectors.toList());
-        
+        // Găsește coletele asignate curierului (fie direct pe colet, fie prin comandă)
         List<Colet> livrari = coletRepository.findAll().stream()
-                .filter(c -> comenziCurier.stream()
-                        .anyMatch(cmd -> cmd.getIdComanda().equals(c.getComanda().getIdComanda())))
+                .filter(c -> {
+                    // Verifică dacă curierul e asignat direct pe colet
+                    if (c.getCurier() != null && c.getCurier().getIdUtilizator().equals(curierId)) {
+                        return true;
+                    }
+                    // Sau dacă curierul e asignat pe comandă
+                    if (c.getComanda() != null && c.getComanda().getCurier() != null 
+                            && c.getComanda().getCurier().getIdUtilizator().equals(curierId)) {
+                        return true;
+                    }
+                    return false;
+                })
                 .filter(c -> c.getStatusColet().equals("in_tranzit") || c.getStatusColet().equals("in_livrare"))
                 .collect(Collectors.toList());
         
@@ -272,49 +388,74 @@ public class CurierController {
     
     /**
      * GET /api/curier/{curierId}/ramburs
-     * Lista coletelor cu ramburs de încasat
+     * Lista coletelor cu ramburs de încasat + plăți cash de la pickup-uri
      */
     @GetMapping("/{curierId}/ramburs")
     public ResponseEntity<Map<String, Object>> getRamburs(@PathVariable Long curierId) {
-        List<Comanda> comenziCurier = comandaRepository.findAll().stream()
-                .filter(c -> c.getCurier() != null && c.getCurier().getIdUtilizator().equals(curierId))
-                .collect(Collectors.toList());
-        
-        List<Colet> coleteRamburs = coletRepository.findAll().stream()
-                .filter(c -> comenziCurier.stream()
-                        .anyMatch(cmd -> cmd.getIdComanda().equals(c.getComanda().getIdComanda())))
-                .filter(c -> c.getPretDeclarat() != null && c.getPretDeclarat().compareTo(BigDecimal.ZERO) > 0)
-                .collect(Collectors.toList());
-        
-        // Neîncasate (nelivrate)
-        List<Map<String, Object>> neincasate = coleteRamburs.stream()
-                .filter(c -> !c.getStatusColet().equals("livrat"))
-                .map(c -> {
-                    Map<String, Object> m = new HashMap<>();
-                    m.put("idColet", c.getIdColet());
-                    m.put("codAwb", c.getCodAwb());
-                    m.put("suma", c.getPretDeclarat());
-                    m.put("status", c.getStatusColet());
-                    if (c.getAdresaDestinatar() != null) {
-                        m.put("destinatar", c.getAdresaDestinatar().getOras() + ", " + 
-                            c.getAdresaDestinatar().getStrada() + " " + c.getAdresaDestinatar().getNumar());
+        // Găsește toate coletele asignate curierului (fie direct, fie prin comandă)
+        List<Colet> coleteCurier = coletRepository.findAll().stream()
+                .filter(c -> {
+                    if (c.getCurier() != null && c.getCurier().getIdUtilizator().equals(curierId)) {
+                        return true;
                     }
-                    return m;
+                    if (c.getComanda() != null && c.getComanda().getCurier() != null 
+                            && c.getComanda().getCurier().getIdUtilizator().equals(curierId)) {
+                        return true;
+                    }
+                    return false;
                 })
                 .collect(Collectors.toList());
         
-        // Încasate (livrate)
-        List<Map<String, Object>> incasate = coleteRamburs.stream()
-                .filter(c -> c.getStatusColet().equals("livrat"))
-                .map(c -> {
+        List<Map<String, Object>> neincasate = new ArrayList<>();
+        List<Map<String, Object>> incasate = new ArrayList<>();
+        
+        for (Colet colet : coleteCurier) {
+            // 1. Verifică ramburs (pretDeclarat > 0)
+            if (colet.getPretDeclarat() != null && colet.getPretDeclarat().compareTo(BigDecimal.ZERO) > 0) {
+                Map<String, Object> m = new HashMap<>();
+                m.put("idColet", colet.getIdColet());
+                m.put("codAwb", colet.getCodAwb());
+                m.put("suma", colet.getPretDeclarat());
+                m.put("status", colet.getStatusColet());
+                m.put("tip", "ramburs");
+                if (colet.getAdresaDestinatar() != null) {
+                    m.put("destinatar", colet.getAdresaDestinatar().getOras() + ", " + 
+                        colet.getAdresaDestinatar().getStrada() + " " + colet.getAdresaDestinatar().getNumar());
+                }
+                
+                if (colet.getStatusColet().equals("livrat")) {
+                    incasate.add(m);
+                } else {
+                    neincasate.add(m);
+                }
+            }
+            
+            // 2. Verifică plată cash de la pickup-uri
+            if (colet.getComanda() != null && "cash".equals(colet.getComanda().getModalitatePlata())) {
+                Optional<Factura> facturaOpt = facturaRepository.findByComandaId(colet.getComanda().getIdComanda());
+                if (facturaOpt.isPresent()) {
+                    Factura factura = facturaOpt.get();
                     Map<String, Object> m = new HashMap<>();
-                    m.put("idColet", c.getIdColet());
-                    m.put("codAwb", c.getCodAwb());
-                    m.put("suma", c.getPretDeclarat());
-                    m.put("status", c.getStatusColet());
-                    return m;
-                })
-                .collect(Collectors.toList());
+                    m.put("idColet", colet.getIdColet());
+                    m.put("codAwb", colet.getCodAwb());
+                    m.put("suma", factura.getSumaTotala());
+                    m.put("status", colet.getStatusColet());
+                    m.put("tip", "plata_pickup");
+                    if (colet.getAdresaExpeditor() != null) {
+                        m.put("expeditor", colet.getAdresaExpeditor().getOras() + ", " + 
+                            colet.getAdresaExpeditor().getStrada() + " " + colet.getAdresaExpeditor().getNumar());
+                    }
+                    
+                    // Dacă coletul nu mai e în asteptare_plata, înseamnă că plata a fost încasată
+                    // (curierul nu poate ridica fără să încaseze)
+                    if (!"asteptare_plata".equals(colet.getStatusColet())) {
+                        incasate.add(m);
+                    } else {
+                        neincasate.add(m);
+                    }
+                }
+            }
+        }
         
         BigDecimal totalNeincasat = neincasate.stream()
                 .map(m -> (BigDecimal) m.get("suma"))
@@ -407,6 +548,20 @@ public class CurierController {
         m.put("greutate", colet.getGreutateKg());
         m.put("tipServiciu", colet.getTipServiciu());
         
+        // Informații despre plată
+        Comanda comanda = colet.getComanda();
+        if (comanda != null) {
+            m.put("modalitatePlata", comanda.getModalitatePlata());
+            
+            // Obține suma de plată din factură
+            Optional<Factura> facturaOpt = facturaRepository.findByComandaId(comanda.getIdComanda());
+            if (facturaOpt.isPresent()) {
+                Factura factura = facturaOpt.get();
+                m.put("sumaDePlata", factura.getSumaTotala());
+                m.put("statusPlata", factura.getStatusPlata());
+            }
+        }
+        
         if (colet.getAdresaExpeditor() != null) {
             Adresa exp = colet.getAdresaExpeditor();
             m.put("adresaPickup", exp.getOras() + ", " + exp.getStrada() + " " + exp.getNumar());
@@ -496,5 +651,196 @@ public class CurierController {
         public Boolean rambursIncasat;
         public String motivRespingere;
         public String nota;
+    }
+    
+    public static class RutaRequest {
+        public String orasOrigine;
+        public String orasDestinatie;
+        public String judetOrigine;
+        public String judetDestinatie;
+        public Integer prioritate;
+        public String descriere;
+        public Boolean activa;
+    }
+    
+    // ==================== RUTE CURIER ====================
+    
+    /**
+     * GET /api/curier/{curierId}/rute
+     * Lista rutelor curierului
+     */
+    @GetMapping("/{curierId}/rute")
+    public ResponseEntity<List<Map<String, Object>>> getRuteCurier(@PathVariable Long curierId) {
+        List<RutaCurier> rute = rutaCurierRepository.findByCurier_IdUtilizator(curierId);
+        
+        List<Map<String, Object>> result = rute.stream()
+                .map(ruta -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("idRuta", ruta.getIdRuta());
+                    map.put("orasOrigine", ruta.getOrasOrigine());
+                    map.put("orasDestinatie", ruta.getOrasDestinatie());
+                    map.put("judetOrigine", ruta.getJudetOrigine());
+                    map.put("judetDestinatie", ruta.getJudetDestinatie());
+                    map.put("prioritate", ruta.getPrioritate());
+                    map.put("descriere", ruta.getDescriere());
+                    map.put("activa", ruta.getActiva());
+                    return map;
+                })
+                .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(result);
+    }
+    
+    /**
+     * POST /api/curier/{curierId}/rute
+     * Adaugă o rută nouă pentru curier
+     */
+    @PostMapping("/{curierId}/rute")
+    public ResponseEntity<Map<String, Object>> adaugaRuta(
+            @PathVariable Long curierId,
+            @RequestBody RutaRequest request) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        Optional<Utilizator> curierOpt = utilizatorRepository.findById(curierId);
+        if (curierOpt.isEmpty()) {
+            response.put("success", false);
+            response.put("message", "Curierul nu a fost găsit");
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        RutaCurier ruta = new RutaCurier();
+        ruta.setCurier(curierOpt.get());
+        ruta.setOrasOrigine(request.orasOrigine);
+        ruta.setOrasDestinatie(request.orasDestinatie);
+        ruta.setJudetOrigine(request.judetOrigine);
+        ruta.setJudetDestinatie(request.judetDestinatie);
+        ruta.setPrioritate(request.prioritate != null ? request.prioritate : 0);
+        ruta.setDescriere(request.descriere);
+        ruta.setActiva(request.activa != null ? request.activa : true);
+        
+        rutaCurierRepository.save(ruta);
+        
+        response.put("success", true);
+        response.put("message", "Ruta a fost adăugată cu succes");
+        response.put("idRuta", ruta.getIdRuta());
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * PUT /api/curier/{curierId}/rute/{rutaId}
+     * Actualizează o rută existentă
+     */
+    @PutMapping("/{curierId}/rute/{rutaId}")
+    public ResponseEntity<Map<String, Object>> actualizeazaRuta(
+            @PathVariable Long curierId,
+            @PathVariable Long rutaId,
+            @RequestBody RutaRequest request) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        Optional<RutaCurier> rutaOpt = rutaCurierRepository.findById(rutaId);
+        if (rutaOpt.isEmpty()) {
+            response.put("success", false);
+            response.put("message", "Ruta nu a fost găsită");
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        RutaCurier ruta = rutaOpt.get();
+        
+        // Verifică că ruta aparține curierului
+        if (!ruta.getCurier().getIdUtilizator().equals(curierId)) {
+            response.put("success", false);
+            response.put("message", "Nu aveți permisiunea să editați această rută");
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        if (request.orasOrigine != null) ruta.setOrasOrigine(request.orasOrigine);
+        if (request.orasDestinatie != null) ruta.setOrasDestinatie(request.orasDestinatie);
+        if (request.judetOrigine != null) ruta.setJudetOrigine(request.judetOrigine);
+        if (request.judetDestinatie != null) ruta.setJudetDestinatie(request.judetDestinatie);
+        if (request.prioritate != null) ruta.setPrioritate(request.prioritate);
+        if (request.descriere != null) ruta.setDescriere(request.descriere);
+        if (request.activa != null) ruta.setActiva(request.activa);
+        
+        rutaCurierRepository.save(ruta);
+        
+        response.put("success", true);
+        response.put("message", "Ruta a fost actualizată cu succes");
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * DELETE /api/curier/{curierId}/rute/{rutaId}
+     * Șterge o rută
+     */
+    @DeleteMapping("/{curierId}/rute/{rutaId}")
+    public ResponseEntity<Map<String, Object>> stergeRuta(
+            @PathVariable Long curierId,
+            @PathVariable Long rutaId) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        Optional<RutaCurier> rutaOpt = rutaCurierRepository.findById(rutaId);
+        if (rutaOpt.isEmpty()) {
+            response.put("success", false);
+            response.put("message", "Ruta nu a fost găsită");
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        RutaCurier ruta = rutaOpt.get();
+        
+        // Verifică că ruta aparține curierului
+        if (!ruta.getCurier().getIdUtilizator().equals(curierId)) {
+            response.put("success", false);
+            response.put("message", "Nu aveți permisiunea să ștergeți această rută");
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        rutaCurierRepository.delete(ruta);
+        
+        response.put("success", true);
+        response.put("message", "Ruta a fost ștearsă cu succes");
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * PATCH /api/curier/{curierId}/rute/{rutaId}/toggle
+     * Activează/dezactivează o rută
+     */
+    @PatchMapping("/{curierId}/rute/{rutaId}/toggle")
+    public ResponseEntity<Map<String, Object>> toggleRuta(
+            @PathVariable Long curierId,
+            @PathVariable Long rutaId) {
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        Optional<RutaCurier> rutaOpt = rutaCurierRepository.findById(rutaId);
+        if (rutaOpt.isEmpty()) {
+            response.put("success", false);
+            response.put("message", "Ruta nu a fost găsită");
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        RutaCurier ruta = rutaOpt.get();
+        
+        // Verifică că ruta aparține curierului
+        if (!ruta.getCurier().getIdUtilizator().equals(curierId)) {
+            response.put("success", false);
+            response.put("message", "Nu aveți permisiunea să modificați această rută");
+            return ResponseEntity.badRequest().body(response);
+        }
+        
+        ruta.setActiva(!ruta.getActiva());
+        rutaCurierRepository.save(ruta);
+        
+        response.put("success", true);
+        response.put("activa", ruta.getActiva());
+        response.put("message", ruta.getActiva() ? "Ruta a fost activată" : "Ruta a fost dezactivată");
+        
+        return ResponseEntity.ok(response);
     }
 }

@@ -171,7 +171,8 @@
 }
 
 .status-badge,
-.collected-badge {
+.collected-badge,
+.type-badge {
   display: inline-flex;
   padding: 4px 10px;
   border-radius: 20px;
@@ -190,6 +191,31 @@
   background: rgba(16, 185, 129, 0.15);
   color: #A7F3D0;
   border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.type-badge {
+  background: rgba(168, 85, 247, 0.15);
+  color: #C4B5FD;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.type-badge.ramburs {
+  background: rgba(245, 158, 11, 0.15);
+  color: #FDE68A;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.type-badge.plata_pickup {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93C5FD;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.item-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
 }
 
 /* Stats */

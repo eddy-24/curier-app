@@ -52,71 +52,118 @@ export default function RapoarteKPI() {
     setLoading(true);
     try {
       const [kpiRes, raportRes] = await Promise.all([
-        fetch(`http://localhost:8081/api/admin/kpi?perioada=${perioadaSelectata}`),
+        fetch(`http://localhost:8081/api/admin/rapoarte/kpi?perioada=${perioadaSelectata}`),
         fetch(`http://localhost:8081/api/admin/rapoarte/lunar?an=${anSelectat}`)
       ]);
 
       if (kpiRes.ok) {
-        setKpiData(await kpiRes.json());
-      } else {
-        // Date mock pentru demo
+        const data = await kpiRes.json();
         setKpiData({
-          totalComenzi: 1250,
-          comenziFinalizate: 1180,
-          comenziAnulate: 35,
-          rataSucces: 94.4,
-          totalColete: 2340,
-          coleteLivrate: 2180,
-          coleteReturnat: 95,
-          coleteEsuat: 65,
-          timpMediuLivrare: 28,
-          livrareLaTimp: 92.5,
-          venituriLuna: 45680.50,
-          venituriAnPrecedent: 38500,
-          crestere: 18.6,
-          curieriActivi: 12,
-          coletePeCurier: 195
+          totalComenzi: data.totalComenzi || 0,
+          comenziFinalizate: data.comenziFinalizate || 0,
+          comenziAnulate: data.comenziAnulate || 0,
+          rataSucces: data.rataSucces || 0,
+          totalColete: data.totalColete || 0,
+          coleteLivrate: data.coleteLivrate || 0,
+          coleteReturnat: data.coleteReturnat || 0,
+          coleteEsuat: data.coleteEsuat || 0,
+          timpMediuLivrare: data.timpMediuLivrare || 0,
+          livrareLaTimp: data.livrareLaTimp || 0,
+          venituriLuna: data.venituriLuna || 0,
+          venituriAnPrecedent: data.venituriAnPrecedent || 0,
+          crestere: data.crestere || 0,
+          curieriActivi: data.curieriActivi || 0,
+          coletePeCurier: data.coletePeCurier || 0
+        });
+      } else {
+        // Afișăm zerouri dacă nu sunt date
+        setKpiData({
+          totalComenzi: 0,
+          comenziFinalizate: 0,
+          comenziAnulate: 0,
+          rataSucces: 0,
+          totalColete: 0,
+          coleteLivrate: 0,
+          coleteReturnat: 0,
+          coleteEsuat: 0,
+          timpMediuLivrare: 0,
+          livrareLaTimp: 0,
+          venituriLuna: 0,
+          venituriAnPrecedent: 0,
+          crestere: 0,
+          curieriActivi: 0,
+          coletePeCurier: 0
         });
       }
 
       if (raportRes.ok) {
-        setRaportLunar(await raportRes.json());
+        const data = await raportRes.json();
+        setRaportLunar(data.map((r: { luna: string; comenzi: number; venituri: number; coleteLivrate: number }) => ({
+          luna: r.luna,
+          comenzi: r.comenzi || 0,
+          venituri: Number(r.venituri) || 0,
+          coleteLivrate: r.coleteLivrate || 0
+        })));
       } else {
-        // Date mock
-        setRaportLunar(MONTHS.map((luna, i) => ({
+        // Date goale pentru fiecare lună
+        setRaportLunar(MONTHS.map((luna) => ({
           luna,
-          comenzi: Math.floor(Math.random() * 200) + 80,
-          venituri: Math.floor(Math.random() * 50000) + 20000,
-          coleteLivrate: Math.floor(Math.random() * 400) + 150
+          comenzi: 0,
+          venituri: 0,
+          coleteLivrate: 0
         })));
       }
     } catch (error) {
       console.error('Eroare la încărcarea datelor:', error);
-      // Setăm date mock în caz de eroare
+      // Setăm date goale în caz de eroare
       setKpiData({
-        totalComenzi: 1250,
-        comenziFinalizate: 1180,
-        comenziAnulate: 35,
-        rataSucces: 94.4,
-        totalColete: 2340,
-        coleteLivrate: 2180,
-        coleteReturnat: 95,
-        coleteEsuat: 65,
-        timpMediuLivrare: 28,
-        livrareLaTimp: 92.5,
-        venituriLuna: 45680.50,
-        venituriAnPrecedent: 38500,
-        crestere: 18.6,
-        curieriActivi: 12,
-        coletePeCurier: 195
+        totalComenzi: 0,
+        comenziFinalizate: 0,
+        comenziAnulate: 0,
+        rataSucces: 0,
+        totalColete: 0,
+        coleteLivrate: 0,
+        coleteReturnat: 0,
+        coleteEsuat: 0,
+        timpMediuLivrare: 0,
+        livrareLaTimp: 0,
+        venituriLuna: 0,
+        venituriAnPrecedent: 0,
+        crestere: 0,
+        curieriActivi: 0,
+        coletePeCurier: 0
       });
+      setRaportLunar(MONTHS.map((luna) => ({
+        luna,
+        comenzi: 0,
+        venituri: 0,
+        coleteLivrate: 0
+      })));
     } finally {
       setLoading(false);
     }
   };
 
-  const exportRaport = (format: 'csv' | 'pdf') => {
-    alert(`Exportul în format ${format.toUpperCase()} va fi implementat!`);
+  const exportRaport = async (format: 'csv' | 'pdf') => {
+    try {
+      const response = await fetch(`http://localhost:8081/api/admin/rapoarte/export?perioada=${perioadaSelectata}`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `raport_kpi_${perioadaSelectata}.${format === 'csv' ? 'csv' : 'pdf'}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        alert('Eroare la exportul raportului');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Eroare la exportul raportului');
+    }
   };
 
   if (loading) {
@@ -321,7 +368,7 @@ export default function RapoarteKPI() {
             ))}
           </tbody>
           <tfoot>
-            <tr style={{ background: '#f8fafc', fontWeight: 600 }}>
+            <tr style={{ background: 'rgba(15, 23, 42, 0.5)', fontWeight: 600 }}>
               <td>TOTAL</td>
               <td>{raportLunar.reduce((sum, r) => sum + r.comenzi, 0)}</td>
               <td>{raportLunar.reduce((sum, r) => sum + r.coleteLivrate, 0)}</td>
@@ -338,29 +385,29 @@ export default function RapoarteKPI() {
           <h2>📊 Distribuție status colete</h2>
         </div>
         <div style={{ padding: '24px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
-          <div style={{ textAlign: 'center', padding: '20px', background: '#dcfce7', borderRadius: '12px' }}>
-            <div style={{ fontSize: '32px', fontWeight: 700, color: '#16a34a' }}>
+          <div style={{ textAlign: 'center', padding: '20px', background: 'rgba(34, 197, 94, 0.15)', borderRadius: '12px', border: '1px solid rgba(34, 197, 94, 0.3)' }}>
+            <div style={{ fontSize: '32px', fontWeight: 700, color: '#4ADE80' }}>
               {((kpiData?.coleteLivrate || 0) / (kpiData?.totalColete || 1) * 100).toFixed(1)}%
             </div>
-            <div style={{ color: '#15803d', marginTop: '8px' }}>Livrate</div>
+            <div style={{ color: '#4ADE80', marginTop: '8px' }}>Livrate</div>
           </div>
-          <div style={{ textAlign: 'center', padding: '20px', background: '#fef3c7', borderRadius: '12px' }}>
-            <div style={{ fontSize: '32px', fontWeight: 700, color: '#d97706' }}>
+          <div style={{ textAlign: 'center', padding: '20px', background: 'rgba(249, 115, 22, 0.15)', borderRadius: '12px', border: '1px solid rgba(249, 115, 22, 0.3)' }}>
+            <div style={{ fontSize: '32px', fontWeight: 700, color: '#FB923C' }}>
               {((kpiData?.coleteReturnat || 0) / (kpiData?.totalColete || 1) * 100).toFixed(1)}%
             </div>
-            <div style={{ color: '#b45309', marginTop: '8px' }}>Returnate</div>
+            <div style={{ color: '#FB923C', marginTop: '8px' }}>Returnate</div>
           </div>
-          <div style={{ textAlign: 'center', padding: '20px', background: '#fee2e2', borderRadius: '12px' }}>
-            <div style={{ fontSize: '32px', fontWeight: 700, color: '#dc2626' }}>
+          <div style={{ textAlign: 'center', padding: '20px', background: 'rgba(239, 68, 68, 0.15)', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+            <div style={{ fontSize: '32px', fontWeight: 700, color: '#F87171' }}>
               {((kpiData?.coleteEsuat || 0) / (kpiData?.totalColete || 1) * 100).toFixed(1)}%
             </div>
-            <div style={{ color: '#b91c1c', marginTop: '8px' }}>Eșuate</div>
+            <div style={{ color: '#F87171', marginTop: '8px' }}>Eșuate</div>
           </div>
-          <div style={{ textAlign: 'center', padding: '20px', background: '#dbeafe', borderRadius: '12px' }}>
-            <div style={{ fontSize: '32px', fontWeight: 700, color: '#2563eb' }}>
+          <div style={{ textAlign: 'center', padding: '20px', background: 'rgba(59, 130, 246, 0.15)', borderRadius: '12px', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
+            <div style={{ fontSize: '32px', fontWeight: 700, color: '#60A5FA' }}>
               {(100 - ((kpiData?.coleteLivrate || 0) + (kpiData?.coleteReturnat || 0) + (kpiData?.coleteEsuat || 0)) / (kpiData?.totalColete || 1) * 100).toFixed(1)}%
             </div>
-            <div style={{ color: '#1d4ed8', marginTop: '8px' }}>În curs</div>
+            <div style={{ color: '#60A5FA', marginTop: '8px' }}>În curs</div>
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import '../admin/AdminLayout.css';
 import './ClientDashboard.css';
 
 interface DashboardStats {
@@ -61,6 +62,12 @@ export default function ClientDashboard() {
       case 'in_procesare': return 'status-processing';
       case 'finalizata': return 'status-completed';
       case 'anulata': return 'status-cancelled';
+      case 'anulat': return 'status-cancelled';
+      case 'in_asteptare': return 'status-processing';
+      case 'asteptare_plata': return 'status-new';
+      case 'in_tranzit': return 'status-processing';
+      case 'in_livrare': return 'status-processing';
+      case 'livrat': return 'status-completed';
       default: return '';
     }
   };
@@ -71,6 +78,12 @@ export default function ClientDashboard() {
       case 'in_procesare': return 'În procesare';
       case 'finalizata': return 'Finalizată';
       case 'anulata': return 'Anulată';
+      case 'anulat': return 'Anulată';
+      case 'in_asteptare': return 'În așteptare';
+      case 'asteptare_plata': return 'Așteaptă plata';
+      case 'in_tranzit': return 'În tranzit';
+      case 'in_livrare': return 'În livrare';
+      case 'livrat': return 'Livrat';
       default: return status;
     }
   };
@@ -196,10 +209,12 @@ export default function ClientDashboard() {
       </section>
 
       {/* Recent Shipments Table */}
-      <section style={{ background: '#1E293B', borderRadius: '12px', padding: '1.5rem', border: '1px solid rgba(148, 163, 184, 0.08)' }}>
-        <h2 className="section-title">Expedieri Recente</h2>
+      <section className="data-table-container" style={{ marginTop: 0 }}>
+        <div className="table-header">
+          <h2>Expedieri Recente</h2>
+        </div>
         {expedieri.length === 0 ? (
-          <div className="empty-state">
+          <div className="empty-state" style={{ padding: '2rem' }}>
             <div className="empty-icon">📦</div>
             <p>Nu ai expedieri încă.</p>
             <a href="/client/expediere-noua" className="btn-cta">
@@ -207,40 +222,38 @@ export default function ClientDashboard() {
             </a>
           </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', background: 'transparent' }}>
-              <thead>
-                <tr>
-                  <th style={{ textAlign: 'left', padding: '1rem 1.25rem', fontSize: '0.75rem', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid rgba(148, 163, 184, 0.1)', background: 'rgba(15, 23, 42, 0.5)' }}>ID</th>
-                  <th style={{ textAlign: 'left', padding: '1rem 1.25rem', fontSize: '0.75rem', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid rgba(148, 163, 184, 0.1)', background: 'rgba(15, 23, 42, 0.5)' }}>Data</th>
-                  <th style={{ textAlign: 'left', padding: '1rem 1.25rem', fontSize: '0.75rem', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid rgba(148, 163, 184, 0.1)', background: 'rgba(15, 23, 42, 0.5)' }}>AWB</th>
-                  <th style={{ textAlign: 'left', padding: '1rem 1.25rem', fontSize: '0.75rem', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid rgba(148, 163, 184, 0.1)', background: 'rgba(15, 23, 42, 0.5)' }}>Serviciu</th>
-                  <th style={{ textAlign: 'left', padding: '1rem 1.25rem', fontSize: '0.75rem', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid rgba(148, 163, 184, 0.1)', background: 'rgba(15, 23, 42, 0.5)' }}>Status</th>
-                  <th style={{ textAlign: 'left', padding: '1rem 1.25rem', fontSize: '0.75rem', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid rgba(148, 163, 184, 0.1)', background: 'rgba(15, 23, 42, 0.5)' }}>Acțiuni</th>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Data</th>
+                <th>AWB</th>
+                <th>Serviciu</th>
+                <th>Status</th>
+                <th>Acțiuni</th>
+              </tr>
+            </thead>
+            <tbody>
+              {expedieri.map((exp) => (
+                <tr key={exp.idComanda}>
+                  <td><strong>#{exp.idComanda}</strong></td>
+                  <td>{new Date(exp.dataCreare).toLocaleDateString('ro-RO')}</td>
+                  <td><code style={{ background: 'rgba(148, 163, 184, 0.2)', padding: '4px 8px', borderRadius: '4px', color: '#94A3B8', fontSize: '12px' }}>{exp.colete?.map(c => c.codAwb).join(', ') || '-'}</code></td>
+                  <td>{exp.colete?.[0]?.tipServiciu || '-'}</td>
+                  <td>
+                    <span className={`badge ${getStatusColor(exp.colete?.[0]?.statusColet || exp.statusComanda)}`}>
+                      {getStatusLabel(exp.colete?.[0]?.statusColet || exp.statusComanda)}
+                    </span>
+                  </td>
+                  <td>
+                    <a href={`/client/tracking/${exp.colete?.[0]?.codAwb}`} className="btn-action btn-edit-action" style={{ display: 'inline-flex', textDecoration: 'none' }} title="Tracking">
+                      🔍
+                    </a>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {expedieri.map((exp) => (
-                  <tr key={exp.idComanda} style={{ background: 'transparent' }}>
-                    <td style={{ padding: '1rem 1.25rem', fontSize: '0.9rem', color: '#A855F7', fontWeight: 600, borderBottom: '1px solid rgba(148, 163, 184, 0.06)' }}>#{exp.idComanda}</td>
-                    <td style={{ padding: '1rem 1.25rem', fontSize: '0.9rem', color: '#E2E8F0', borderBottom: '1px solid rgba(148, 163, 184, 0.06)' }}>{new Date(exp.dataCreare).toLocaleDateString('ro-RO')}</td>
-                    <td style={{ padding: '1rem 1.25rem', fontSize: '0.85rem', color: '#94A3B8', fontFamily: 'monospace', borderBottom: '1px solid rgba(148, 163, 184, 0.06)' }}>{exp.colete?.map(c => c.codAwb).join(', ') || '-'}</td>
-                    <td style={{ padding: '1rem 1.25rem', fontSize: '0.9rem', color: '#E2E8F0', borderBottom: '1px solid rgba(148, 163, 184, 0.06)' }}>{exp.colete?.[0]?.tipServiciu || '-'}</td>
-                    <td style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(148, 163, 184, 0.06)' }}>
-                      <span className={`status-pill ${getStatusColor(exp.statusComanda)}`}>
-                        {getStatusLabel(exp.statusComanda)}
-                      </span>
-                    </td>
-                    <td style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(148, 163, 184, 0.06)' }}>
-                      <a href={`/client/tracking/${exp.colete?.[0]?.codAwb}`} className="client-btn-tracking">
-                        Tracking
-                      </a>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         )}
       </section>
     </div>

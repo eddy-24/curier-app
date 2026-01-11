@@ -246,7 +246,7 @@ export default function Configurari() {
                       background: status.culoare 
                     }} />
                   </td>
-                  <td><code style={{ background: '#f1f5f9', padding: '4px 8px', borderRadius: '4px' }}>{status.cod}</code></td>
+                  <td><code style={{ background: 'rgba(148, 163, 184, 0.2)', padding: '4px 8px', borderRadius: '4px', color: '#94A3B8', fontSize: '12px' }}>{status.cod}</code></td>
                   <td><strong>{status.nume}</strong></td>
                   <td>{status.descriere}</td>
                   <td>
@@ -256,14 +256,15 @@ export default function Configurari() {
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <button className="btn-edit" onClick={() => editStatus(status)}>✏️</button>
+                      <button className="btn-action btn-edit-action" onClick={() => editStatus(status)} title="Editează">✏️</button>
                       <button 
-                        className={status.activ ? 'btn-danger' : 'btn-success'}
+                        className={`btn-action ${status.activ ? 'btn-pause-action' : 'btn-play-action'}`}
                         onClick={() => toggleStatusActiv(status.id)}
+                        title={status.activ ? 'Dezactivează' : 'Activează'}
                       >
                         {status.activ ? '⏸️' : '▶️'}
                       </button>
-                      <button className="btn-danger" onClick={() => deleteStatus(status.id)}>🗑️</button>
+                      <button className="btn-action btn-delete-action" onClick={() => deleteStatus(status.id)} title="Șterge">🗑️</button>
                     </div>
                   </td>
                 </tr>
@@ -293,7 +294,7 @@ export default function Configurari() {
             <tbody>
               {motiveEsec.map(motiv => (
                 <tr key={motiv.id}>
-                  <td><code style={{ background: '#f1f5f9', padding: '4px 8px', borderRadius: '4px' }}>{motiv.cod}</code></td>
+                  <td><code style={{ background: 'rgba(148, 163, 184, 0.2)', padding: '4px 8px', borderRadius: '4px', color: '#94A3B8', fontSize: '12px' }}>{motiv.cod}</code></td>
                   <td><strong>{motiv.descriere}</strong></td>
                   <td>
                     <span className={`badge ${motiv.necesitaDetalii ? 'badge-curier' : 'badge-inactive'}`}>
@@ -307,14 +308,15 @@ export default function Configurari() {
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <button className="btn-edit" onClick={() => editMotiv(motiv)}>✏️</button>
+                      <button className="btn-action btn-edit-action" onClick={() => editMotiv(motiv)} title="Editează">✏️</button>
                       <button 
-                        className={motiv.activ ? 'btn-danger' : 'btn-success'}
+                        className={`btn-action ${motiv.activ ? 'btn-pause-action' : 'btn-play-action'}`}
                         onClick={() => toggleMotivActiv(motiv.id)}
+                        title={motiv.activ ? 'Dezactivează' : 'Activează'}
                       >
                         {motiv.activ ? '⏸️' : '▶️'}
                       </button>
-                      <button className="btn-danger" onClick={() => deleteMotiv(motiv.id)}>🗑️</button>
+                      <button className="btn-action btn-delete-action" onClick={() => deleteMotiv(motiv.id)} title="Șterge">🗑️</button>
                     </div>
                   </td>
                 </tr>
@@ -358,14 +360,15 @@ export default function Configurari() {
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <button className="btn-edit" onClick={() => editDepozit(depozit)}>✏️</button>
+                      <button className="btn-action btn-edit-action" onClick={() => editDepozit(depozit)} title="Editează">✏️</button>
                       <button 
-                        className={depozit.activ ? 'btn-danger' : 'btn-success'}
+                        className={`btn-action ${depozit.activ ? 'btn-pause-action' : 'btn-play-action'}`}
                         onClick={() => toggleDepozitActiv(depozit.id)}
+                        title={depozit.activ ? 'Dezactivează' : 'Activează'}
                       >
                         {depozit.activ ? '⏸️' : '▶️'}
                       </button>
-                      <button className="btn-danger" onClick={() => deleteDepozit(depozit.id)}>🗑️</button>
+                      <button className="btn-action btn-delete-action" onClick={() => deleteDepozit(depozit.id)} title="Șterge">🗑️</button>
                     </div>
                   </td>
                 </tr>

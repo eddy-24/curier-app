@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './Login.css';
 
 const Login = () => {
@@ -35,6 +35,8 @@ const Login = () => {
         localStorage.setItem('rol', userData.rol);
         localStorage.setItem('nume', userData.nume);
         localStorage.setItem('prenume', userData.prenume);
+        localStorage.setItem('email', userData.email || '');
+        localStorage.setItem('telefon', userData.telefon || '');
         
         // Redirecționăm în funcție de rol
         switch (userData.rol) {
@@ -48,7 +50,7 @@ const Login = () => {
             navigate('/curier/dashboard');
             break;
           case 'sofer':
-            navigate('/sofer/dashboard');
+            navigate('/curier/dashboard');
             break;
           case 'admin':
             navigate('/admin/dashboard');
@@ -109,12 +111,11 @@ const Login = () => {
           </button>
         </form>
 
-        <div className="demo-credentials">
-          <p><strong>Credențiale demo:</strong></p>
-          <p>👤 client1 / pass123</p>
-          <p>📋 operator1 / pass123</p>
-          <p>🚚 curier1 / pass123</p>
-          <p>🔧 admin / admin123</p>
+        <div className="register-prompt">
+          <p>Nu ai încă un cont?</p>
+          <Link to="/register" className="register-link">
+            ✨ Creează cont gratuit
+          </Link>
         </div>
       </div>
     </div>

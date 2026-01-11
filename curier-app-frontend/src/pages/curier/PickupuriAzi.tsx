@@ -12,6 +12,8 @@ interface Pickup {
   detaliiAdresa: string;
   numeExpeditor: string;
   telefonExpeditor: string;
+  modalitatePlata?: string;
+  sumaDePlata?: number;
 }
 
 const PickupuriAzi = () => {
@@ -44,10 +46,41 @@ const PickupuriAzi = () => {
     switch (status) {
       case 'in_asteptare':
         return <span className="status-badge waiting">În așteptare</span>;
+      case 'preluat_curier':
+        return <span className="status-badge assigned">📋 Asignat</span>;
+      case 'asteptare_plata':
+        return <span className="status-badge payment">💰 Așteaptă plata</span>;
       case 'ridicat':
         return <span className="status-badge picked">Ridicat</span>;
       default:
         return <span className="status-badge">{status}</span>;
+    }
+  };
+
+  const handleIncasarePlata = async (coletId: number) => {
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
+
+    if (!confirm('Confirmă că ai încasat plata de la expeditor?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8081/api/curier/${userId}/colet/${coletId}/incaseaza-plata`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        alert('Plata a fost încasată! Acum poți prelua coletul.');
+        // Reîncarcă lista
+        fetchPickups(parseInt(userId));
+      } else {
+        alert('Eroare la încasarea plății');
+      }
+    } catch (error) {
+      console.error('Eroare:', error);
+      alert('Eroare de conexiune');
     }
   };
 
@@ -112,6 +145,14 @@ const PickupuriAzi = () => {
                   <span className="icon">⚖️</span>
                   <span className="text">{pickup.greutate} kg • {pickup.tipServiciu}</span>
                 </div>
+
+                {/* Afișăm suma de încasat dacă este plată cash */}
+                {pickup.status === 'asteptare_plata' && pickup.sumaDePlata && (
+                  <div className="info-row payment-info">
+                    <span className="icon">💰</span>
+                    <span className="text highlight">De încasat: {pickup.sumaDePlata.toFixed(2)} RON</span>
+                  </div>
+                )}
               </div>
               
               <div className="card-actions">
@@ -127,12 +168,23 @@ const PickupuriAzi = () => {
                 >
                   🗺️ Navighează
                 </button>
-                <button 
-                  className="action-btn pickup-action"
-                  onClick={() => navigate(`/curier/colet/${pickup.idColet}?action=pickup`)}
-                >
-                  📦 Ridică
-                </button>
+                
+                {/* Dacă coletul așteaptă plata, arată butonul de încasare */}
+                {pickup.status === 'asteptare_plata' ? (
+                  <button 
+                    className="action-btn payment-action"
+                    onClick={() => handleIncasarePlata(pickup.idColet)}
+                  >
+                    💰 Încasează {pickup.sumaDePlata?.toFixed(2)} RON
+                  </button>
+                ) : (
+                  <button 
+                    className="action-btn pickup-action"
+                    onClick={() => navigate(`/curier/colet/${pickup.idColet}?action=pickup`)}
+                  >
+                    📦 Ridică
+                  </button>
+                )}
               </div>
             </div>
           ))}

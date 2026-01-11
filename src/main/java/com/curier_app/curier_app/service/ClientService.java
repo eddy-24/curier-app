@@ -2,10 +2,18 @@ package com.curier_app.curier_app.service;
 
 import com.curier_app.curier_app.model.*;
 import com.curier_app.curier_app.repository.*;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.properties.TextAlignment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -81,6 +89,12 @@ public class ClientService {
         comanda.setStatusComanda("noua");
         comanda = comandaRepository.save(comanda);
 
+        // Determinăm statusul inițial bazat pe modalitatea de plată
+        // Atât cash cât și card încep în asteptare_plata
+        // - cash: curierul încasează la pickup
+        // - card: clientul plătește online, apoi coletul devine in_asteptare
+        String statusInitial = "asteptare_plata";
+
         // 3. Creăm coletul/coletele
         for (ColetRequest coletReq : request.getColete()) {
             Colet colet = new Colet();
@@ -90,7 +104,7 @@ public class ClientService {
             colet.setVolumM3(coletReq.getVolumM3());
             colet.setTipServiciu(coletReq.getTipServiciu());
             colet.setPretDeclarat(coletReq.getPretDeclarat());
-            colet.setStatusColet("in_asteptare");
+            colet.setStatusColet(statusInitial);
 
             // Adrese
             Adresa expeditor = adresaRepository.findById(coletReq.getIdAdresaExpeditor())
@@ -105,9 +119,17 @@ public class ClientService {
             // 4. Creăm primul event de tracking
             TrackingEvent event = new TrackingEvent();
             event.setColet(colet);
-            event.setStatus("Comandă plasată");
+            
+            // Mesaj diferit pentru plata cash vs card
+            if ("cash".equals(request.getModalitatePlata())) {
+                event.setStatus("Așteptare plată");
+                event.setDescriere("Comanda înregistrată. Curierul va veni să încaseze plata înainte de preluare.");
+            } else {
+                event.setStatus("Comandă plasată");
+                event.setDescriere("Comanda a fost înregistrată și așteaptă preluarea");
+            }
+            
             event.setLocatie(expeditor.getOras());
-            event.setDescriere("Comanda a fost înregistrată și așteaptă preluarea");
             event.setDataEvent(LocalDateTime.now());
             trackingEventRepository.save(event);
         }
@@ -179,6 +201,137 @@ public class ClientService {
         return facturaRepository.findFacturaById(facturaId);
     }
 
+    /**
+     * Marchează o factură ca plătită și actualizează statusul coletelor
+     */
+    public void platesteFactura(Long facturaId) {
+        Optional<Factura> facturaOpt = facturaRepository.findFacturaById(facturaId);
+        if (facturaOpt.isEmpty()) {
+            throw new RuntimeException("Factura nu a fost găsită");
+        }
+        
+        Factura factura = facturaOpt.get();
+        if ("achitat".equals(factura.getStatusPlata())) {
+            throw new RuntimeException("Factura este deja plătită");
+        }
+        
+        // Actualizează statusul de plată
+        facturaRepository.updateStatusPlata(facturaId, "achitat");
+        
+        // Actualizează statusul coletelor din comandă la in_asteptare (gata de ridicare)
+        if (factura.getComanda() != null) {
+            List<Colet> colete = coletRepository.findByComanda(factura.getComanda().getIdComanda());
+            for (Colet colet : colete) {
+                if ("asteptare_plata".equals(colet.getStatusColet())) {
+                    colet.setStatusColet("in_asteptare");
+                    coletRepository.save(colet);
+                }
+            }
+        }
+    }
+
+    /**
+     * Generează PDF pentru o factură
+     */
+    public byte[] generateFacturaPDF(Long facturaId) {
+        Optional<Factura> facturaOpt = facturaRepository.findFacturaById(facturaId);
+        if (facturaOpt.isEmpty()) {
+            throw new RuntimeException("Factura nu a fost găsită");
+        }
+        
+        Factura factura = facturaOpt.get();
+        
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            PdfWriter writer = new PdfWriter(baos);
+            PdfDocument pdfDoc = new PdfDocument(writer);
+            Document document = new Document(pdfDoc);
+            
+            // Header
+            Paragraph header = new Paragraph("BEAK COURIER")
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setBold()
+                    .setFontSize(20);
+            document.add(header);
+            
+            Paragraph subtitle = new Paragraph("FACTURA FISCALA")
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFontSize(14);
+            document.add(subtitle);
+            
+            document.add(new Paragraph("\n"));
+            
+            // Info factura
+            String serieNumar = factura.getSerieNumar() != null ? factura.getSerieNumar() : "N/A";
+            String dataEmitere = factura.getDataEmitere() != null ? factura.getDataEmitere().toString() : "N/A";
+            String dataScadenta = factura.getDataScadenta() != null ? factura.getDataScadenta().toString() : "N/A";
+            String statusPlata = factura.getStatusPlata() != null ? factura.getStatusPlata() : "N/A";
+            
+            document.add(new Paragraph("Seria si numarul: " + serieNumar).setBold());
+            document.add(new Paragraph("Data emiterii: " + dataEmitere));
+            document.add(new Paragraph("Data scadentei: " + dataScadenta));
+            document.add(new Paragraph("Status plata: " + statusPlata));
+            
+            document.add(new Paragraph("\n"));
+            
+            // Info client
+            if (factura.getComanda() != null && factura.getComanda().getClient() != null) {
+                Utilizator client = factura.getComanda().getClient();
+                document.add(new Paragraph("CLIENT:").setBold());
+                document.add(new Paragraph(client.getNume() + " " + client.getPrenume()));
+                if (client.getEmail() != null) {
+                    document.add(new Paragraph("Email: " + client.getEmail()));
+                }
+                if (client.getTelefon() != null) {
+                    document.add(new Paragraph("Telefon: " + client.getTelefon()));
+                }
+            }
+            
+            document.add(new Paragraph("\n"));
+            
+            // Tabel cu detalii
+            if (factura.getComanda() != null) {
+                document.add(new Paragraph("DETALII COMANDA #" + factura.getComanda().getIdComanda()).setBold());
+                
+                Table table = new Table(3);
+                table.addHeaderCell(new Cell().add(new Paragraph("Descriere").setBold()));
+                table.addHeaderCell(new Cell().add(new Paragraph("Cantitate").setBold()));
+                table.addHeaderCell(new Cell().add(new Paragraph("Valoare").setBold()));
+                
+                table.addCell("Servicii de curierat");
+                table.addCell("1");
+                String total = factura.getSumaTotala() != null ? factura.getSumaTotala().toString() + " RON" : "0.00 RON";
+                table.addCell(total);
+                
+                document.add(table);
+            }
+            
+            document.add(new Paragraph("\n"));
+            
+            // Total
+            String totalText = factura.getSumaTotala() != null ? factura.getSumaTotala().toString() : "0.00";
+            Paragraph totalParagraph = new Paragraph("TOTAL DE PLATA: " + totalText + " RON")
+                    .setTextAlignment(TextAlignment.RIGHT)
+                    .setBold()
+                    .setFontSize(14);
+            document.add(totalParagraph);
+            
+            document.add(new Paragraph("\n\n"));
+            
+            // Footer
+            Paragraph footer = new Paragraph("Multumim pentru increderea acordata!")
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setFontSize(10);
+            document.add(footer);
+            
+            document.close();
+            
+            return baos.toByteArray();
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Eroare la generarea PDF-ului: " + e.getMessage());
+        }
+    }
+
     // ==================== ADRESE ====================
 
     /**
@@ -235,8 +388,9 @@ public class ClientService {
     }
 
     private void generareFactura(Comanda comanda, List<ColetRequest> colete) {
+        // Folosește costul calculat în frontend în loc de calculul backend
         BigDecimal total = colete.stream()
-                .map(c -> calculeazaPret(c.getTipServiciu(), c.getGreutateKg()))
+                .map(c -> c.getCostCalculat() != null ? c.getCostCalculat() : calculeazaPret(c.getTipServiciu(), c.getGreutateKg()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         Factura factura = new Factura();
@@ -281,6 +435,7 @@ public class ClientService {
         private BigDecimal volumM3;
         private String tipServiciu;
         private BigDecimal pretDeclarat;
+        private BigDecimal costCalculat; // Costul calculat în frontend
         private Long idAdresaExpeditor;
         private Long idAdresaDestinatar;
 
@@ -292,6 +447,8 @@ public class ClientService {
         public void setTipServiciu(String tipServiciu) { this.tipServiciu = tipServiciu; }
         public BigDecimal getPretDeclarat() { return pretDeclarat; }
         public void setPretDeclarat(BigDecimal pretDeclarat) { this.pretDeclarat = pretDeclarat; }
+        public BigDecimal getCostCalculat() { return costCalculat; }
+        public void setCostCalculat(BigDecimal costCalculat) { this.costCalculat = costCalculat; }
         public Long getIdAdresaExpeditor() { return idAdresaExpeditor; }
         public void setIdAdresaExpeditor(Long idAdresaExpeditor) { this.idAdresaExpeditor = idAdresaExpeditor; }
         public Long getIdAdresaDestinatar() { return idAdresaDestinatar; }

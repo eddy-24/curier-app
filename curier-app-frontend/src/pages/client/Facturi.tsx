@@ -66,6 +66,55 @@ export default function Facturi() {
     .filter(f => f.statusPlata === 'neachitat')
     .reduce((sum, f) => sum + f.sumaTotala, 0);
 
+  const handlePayment = async (facturaId: number) => {
+    if (!confirm('Ești sigur că vrei să plătești această factură?')) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:8081/api/client/${clientId}/facturi/${facturaId}/plateste`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (res.ok) {
+        alert('Plată procesată cu succes!');
+        // Reîncarcă facturile pentru a reflecta schimbarea
+        fetchFacturi();
+      } else {
+        alert('Eroare la procesarea plății. Te rog încearcă din nou.');
+      }
+    } catch (error) {
+      console.error('Eroare la plată:', error);
+      alert('Eroare de conexiune. Te rog încearcă din nou.');
+    }
+  };
+
+  const handleDownloadPDF = async (facturaId: number, serieNumar: string) => {
+    try {
+      const res = await fetch(`http://localhost:8081/api/client/${clientId}/facturi/${facturaId}/pdf`);
+      
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Factura_${serieNumar || facturaId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        alert('Eroare la descărcarea facturii. Te rog încearcă din nou.');
+      }
+    } catch (error) {
+      console.error('Eroare la descărcare:', error);
+      alert('Eroare de conexiune. Te rog încearcă din nou.');
+    }
+  };
+
   if (loading) {
     return <div className="loading">Se încarcă...</div>;
   }
@@ -149,9 +198,19 @@ export default function Facturi() {
               </div>
 
               <div className="factura-actions">
-                <button className="btn-link">Descarcă PDF</button>
+                <button 
+                  className="btn-link"
+                  onClick={() => handleDownloadPDF(factura.idFactura, factura.serieNumar)}
+                >
+                  Descarcă PDF
+                </button>
                 {factura.statusPlata === 'neachitat' && (
-                  <button className="btn-pay">Plătește acum</button>
+                  <button 
+                    className="btn-pay"
+                    onClick={() => handlePayment(factura.idFactura)}
+                  >
+                    Plătește acum
+                  </button>
                 )}
               </div>
             </div>

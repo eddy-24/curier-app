@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useState } from 'react';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ClientLayout from './components/ClientLayout';
 import ClientDashboard from './pages/client/ClientDashboard';
@@ -20,6 +21,7 @@ import PickupuriAzi from './pages/curier/PickupuriAzi';
 import LivrariAzi from './pages/curier/LivrariAzi';
 import ScanAWB from './pages/curier/ScanAWB';
 import RambursPage from './pages/curier/RambursPage';
+import RutePage from './pages/curier/RutePage';
 import ColetUpdate from './pages/curier/ColetUpdate';
 import AdminLayout from './pages/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -42,6 +44,8 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         
         {/* Client Routes */}
@@ -66,6 +70,7 @@ function App() {
           <Route path="livrari" element={<LivrariAzi />} />
           <Route path="scan" element={<ScanAWB />} />
           <Route path="ramburs" element={<RambursPage />} />
+          <Route path="rute" element={<RutePage />} />
           <Route path="colet/:coletId" element={<ColetUpdate />} />
         </Route>
 

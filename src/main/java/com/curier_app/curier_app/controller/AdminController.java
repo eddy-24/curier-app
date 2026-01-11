@@ -4,6 +4,8 @@ import com.curier_app.curier_app.model.*;
 import com.curier_app.curier_app.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -259,9 +261,40 @@ public class AdminController {
 
     @GetMapping("/rapoarte/kpi")
     public ResponseEntity<Map<String, Object>> getRapoarteKPI(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false, defaultValue = "luna") String perioada) {
+        
+        // Dacă nu sunt specificate datele, le calculăm pe baza perioadei
+        if (startDate == null || endDate == null) {
+            endDate = LocalDate.now();
+            switch (perioada) {
+                case "saptamana":
+                    startDate = endDate.minusWeeks(1);
+                    break;
+                case "trimestru":
+                    startDate = endDate.minusMonths(3);
+                    break;
+                case "an":
+                    startDate = endDate.minusYears(1);
+                    break;
+                case "luna":
+                default:
+                    startDate = endDate.minusMonths(1);
+                    break;
+            }
+        }
+        
         return ResponseEntity.ok(adminService.getRapoarteKPI(startDate, endDate));
+    }
+
+    @GetMapping("/rapoarte/lunar")
+    public ResponseEntity<List<Map<String, Object>>> getRapoarteLunare(
+            @RequestParam(required = false) Integer an) {
+        if (an == null) {
+            an = LocalDate.now().getYear();
+        }
+        return ResponseEntity.ok(adminService.getRapoarteLunare(an));
     }
 
     @GetMapping("/rapoarte/curieri")
@@ -269,5 +302,61 @@ public class AdminController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         return ResponseEntity.ok(adminService.getPerformantaCurieri(startDate, endDate));
+    }
+
+    @GetMapping("/rapoarte/export")
+    public ResponseEntity<byte[]> exportRapoarteCSV(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false, defaultValue = "luna") String perioada) {
+        
+        // Dacă nu sunt specificate datele, le calculăm pe baza perioadei
+        if (startDate == null || endDate == null) {
+            endDate = LocalDate.now();
+            switch (perioada) {
+                case "saptamana":
+                    startDate = endDate.minusWeeks(1);
+                    break;
+                case "trimestru":
+                    startDate = endDate.minusMonths(3);
+                    break;
+                case "an":
+                    startDate = endDate.minusYears(1);
+                    break;
+                case "luna":
+                default:
+                    startDate = endDate.minusMonths(1);
+                    break;
+            }
+        }
+        
+        Map<String, Object> kpi = adminService.getRapoarteKPI(startDate, endDate);
+        
+        StringBuilder csv = new StringBuilder();
+        csv.append("RAPORT KPI - BEAK COURIER\n");
+        csv.append("Perioada:,").append(startDate).append(" - ").append(endDate).append("\n\n");
+        
+        csv.append("METRICA,VALOARE\n");
+        csv.append("Total Colete,").append(kpi.getOrDefault("totalColete", 0)).append("\n");
+        csv.append("Colete Livrate,").append(kpi.getOrDefault("coleteLivrate", 0)).append("\n");
+        csv.append("Colete Returnate,").append(kpi.getOrDefault("coleteReturnat", 0)).append("\n");
+        csv.append("Colete Esuate,").append(kpi.getOrDefault("coleteEsuat", 0)).append("\n");
+        csv.append("Rata Livrare (%),").append(kpi.getOrDefault("rataLivrare", 0)).append("\n");
+        csv.append("Timp Mediu Livrare (ore),").append(kpi.getOrDefault("timpMediuLivrare", 0)).append("\n");
+        csv.append("Venituri Totale (RON),").append(kpi.getOrDefault("venituriTotale", 0)).append("\n");
+        csv.append("Ramburs Incasat (RON),").append(kpi.getOrDefault("rambursIncasat", 0)).append("\n");
+        csv.append("Curieri Activi,").append(kpi.getOrDefault("curieriActivi", 0)).append("\n");
+        csv.append("Clienti Activi,").append(kpi.getOrDefault("clientiActivi", 0)).append("\n");
+        
+        byte[] csvBytes = csv.toString().getBytes();
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("text/csv"));
+        headers.setContentDispositionFormData("attachment", "raport_kpi_" + startDate + "_" + endDate + ".csv");
+        headers.setContentLength(csvBytes.length);
+        
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(csvBytes);
     }
 }

@@ -157,8 +157,8 @@
 
 .comenzi-table th {
   text-align: left;
-  padding: 1rem 1.25rem;
-  font-size: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: #64748B;
   text-transform: uppercase;
@@ -168,8 +168,8 @@
 }
 
 .comenzi-table td {
-  padding: 1rem 1.25rem;
-  font-size: 0.9rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
   color: #E2E8F0;
   border-bottom: 1px solid rgba(148, 163, 184, 0.06);
 }
