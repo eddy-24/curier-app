@@ -25,6 +25,10 @@ public class DataInitializer {
             ColetRepository coletRepo,
             TraseuColetRepository traseuColetRepo,
             FacturaRepository facturaRepo,
+            ServiciuRepository serviciuRepo,
+            DepozitRepository depozitRepo,
+            StatusColetRepository statusColetRepo,
+            MotivEsecRepository motivEsecRepo,
             PasswordEncoder passwordEncoder) {
         
         return args -> {
@@ -76,6 +80,19 @@ public class DataInitializer {
                 sofer.setEmail("sofer" + i + "@example.com");
                 sofer.setRol("sofer");
                 utilizatori.add(utilizatorRepo.save(sofer));
+            }
+
+            // Operatori
+            for (int i = 1; i <= 2; i++) {
+                Utilizator operator = new Utilizator();
+                operator.setUsername("operator" + i);
+                operator.setParola(passwordEncoder.encode("pass123"));
+                operator.setNume("Marinescu");
+                operator.setPrenume("Operator" + i);
+                operator.setTelefon("074234567" + i);
+                operator.setEmail("operator" + i + "@example.com");
+                operator.setRol("operator");
+                utilizatori.add(utilizatorRepo.save(operator));
             }
 
             // Admin
@@ -234,10 +251,93 @@ public class DataInitializer {
             System.out.println("  - " + trasee.size() + " trasee");
             System.out.println("  - " + facturi.size() + " facturi");
             System.out.println("========================================");
+
+            // 8. SERVICII
+            List<Serviciu> servicii = new ArrayList<>();
+            
+            Serviciu standard = new Serviciu("Standard", "Livrare în 2-3 zile lucrătoare", 
+                    BigDecimal.valueOf(15.00), BigDecimal.valueOf(2.00), "2-3 zile");
+            servicii.add(serviciuRepo.save(standard));
+            
+            Serviciu express = new Serviciu("Express", "Livrare în 24 ore", 
+                    BigDecimal.valueOf(25.00), BigDecimal.valueOf(3.50), "24 ore");
+            servicii.add(serviciuRepo.save(express));
+            
+            Serviciu sameDay = new Serviciu("Same Day", "Livrare în aceeași zi", 
+                    BigDecimal.valueOf(45.00), BigDecimal.valueOf(5.00), "4-6 ore");
+            servicii.add(serviciuRepo.save(sameDay));
+            
+            Serviciu economic = new Serviciu("Economic", "Livrare în 5-7 zile lucrătoare", 
+                    BigDecimal.valueOf(10.00), BigDecimal.valueOf(1.50), "5-7 zile");
+            servicii.add(serviciuRepo.save(economic));
+            
+            System.out.println("✓ " + servicii.size() + " servicii create");
+
+            // 9. DEPOZITE
+            List<Depozit> depozite = new ArrayList<>();
+            
+            Depozit dep1 = new Depozit("Depozit Central București", 
+                    "Șos. Pipera nr. 42", "București", "București");
+            dep1.setTelefon("021-123-4567");
+            dep1.setEmail("bucuresti@curierapp.com");
+            dep1.setCapacitateMaxima(10000);
+            depozite.add(depozitRepo.save(dep1));
+            
+            Depozit dep2 = new Depozit("Depozit Cluj", 
+                    "Str. Fabricii nr. 15", "Cluj-Napoca", "Cluj");
+            dep2.setTelefon("0264-123-456");
+            dep2.setEmail("cluj@curierapp.com");
+            dep2.setCapacitateMaxima(5000);
+            depozite.add(depozitRepo.save(dep2));
+            
+            Depozit dep3 = new Depozit("Depozit Timișoara", 
+                    "Calea Aradului nr. 88", "Timișoara", "Timiș");
+            dep3.setTelefon("0256-123-456");
+            dep3.setEmail("timisoara@curierapp.com");
+            dep3.setCapacitateMaxima(4000);
+            depozite.add(depozitRepo.save(dep3));
+            
+            System.out.println("✓ " + depozite.size() + " depozite create");
+
+            // 10. STATUSURI COLET
+            List<StatusColet> statusuri = new ArrayList<>();
+            
+            statusuri.add(statusColetRepo.save(new StatusColet("inregistrat", "Înregistrat", "#6b7280", 1)));
+            statusuri.add(statusColetRepo.save(new StatusColet("preluat", "Preluat de curier", "#3b82f6", 2)));
+            statusuri.add(statusColetRepo.save(new StatusColet("in_tranzit", "În tranzit", "#8b5cf6", 3)));
+            statusuri.add(statusColetRepo.save(new StatusColet("in_depozit", "În depozit", "#f59e0b", 4)));
+            statusuri.add(statusColetRepo.save(new StatusColet("in_livrare", "În livrare", "#06b6d4", 5)));
+            statusuri.add(statusColetRepo.save(new StatusColet("livrat", "Livrat", "#22c55e", 6)));
+            statusuri.add(statusColetRepo.save(new StatusColet("esuat", "Livrare eșuată", "#ef4444", 7)));
+            statusuri.add(statusColetRepo.save(new StatusColet("retur", "Returnat", "#f97316", 8)));
+            
+            System.out.println("✓ " + statusuri.size() + " statusuri create");
+
+            // 11. MOTIVE ESEC
+            List<MotivEsec> motive = new ArrayList<>();
+            
+            motive.add(motivEsecRepo.save(new MotivEsec("absent", "Destinatar absent", true)));
+            motive.add(motivEsecRepo.save(new MotivEsec("adresa_gresita", "Adresă incorectă/inexistentă", false)));
+            motive.add(motivEsecRepo.save(new MotivEsec("refuzat", "Colet refuzat de destinatar", false)));
+            motive.add(motivEsecRepo.save(new MotivEsec("deteriorat", "Colet deteriorat", false)));
+            motive.add(motivEsecRepo.save(new MotivEsec("telefon_invalid", "Telefon invalid/fără răspuns", true)));
+            motive.add(motivEsecRepo.save(new MotivEsec("reprogramat", "Reprogramat la cererea clientului", true)));
+            motive.add(motivEsecRepo.save(new MotivEsec("acces_imposibil", "Acces imposibil la adresă", true)));
+            
+            System.out.println("✓ " + motive.size() + " motive eșec create");
+
+            System.out.println("========================================");
+            System.out.println("Date administrative:");
+            System.out.println("  - " + servicii.size() + " servicii");
+            System.out.println("  - " + depozite.size() + " depozite");
+            System.out.println("  - " + statusuri.size() + " statusuri");
+            System.out.println("  - " + motive.size() + " motive eșec");
+            System.out.println("========================================");
             System.out.println("\nCredențiale utilizatori:");
             System.out.println("  Clienti: client1-5 / pass123");
             System.out.println("  Curieri: curier1-3 / pass123");
             System.out.println("  Soferi: sofer1-2 / pass123");
+            System.out.println("  Operatori: operator1-2 / pass123");
             System.out.println("  Admin: admin / admin123");
             System.out.println("========================================\n");
         };

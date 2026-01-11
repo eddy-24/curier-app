@@ -1,5 +1,6 @@
 package com.curier_app.curier_app.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +22,7 @@ public class Colet {
 
     @ManyToOne
     @JoinColumn(name = "id_comanda", nullable = false)
+    @JsonBackReference("comanda-colete")
     private Comanda comanda;
 
     @Column(name = "cod_awb", length = 30, nullable = false, unique = true)

@@ -1,5 +1,6 @@
 package com.curier_app.curier_app.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,6 +23,7 @@ public class Factura {
 
     @OneToOne
     @JoinColumn(name = "id_comanda", nullable = false, unique = true)
+    @JsonIgnoreProperties({"client", "curier"})
     private Comanda comanda;
 
     @Column(name = "serie_numar", length = 50, nullable = false, unique = true)

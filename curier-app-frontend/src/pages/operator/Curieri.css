@@ -1,0 +1,336 @@
+/* Operator Curieri Page - Dark Theme */
+
+.curieri-page {
+  padding: 2rem 2.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #0B1120;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #F8FAFC;
+  margin: 0;
+}
+
+/* Table */
+.table-container {
+  background: #1E293B;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  overflow: hidden;
+}
+
+.curieri-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.curieri-table th {
+  text-align: left;
+  padding: 1rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.curieri-table td {
+  padding: 1rem 1.25rem;
+  font-size: 0.9rem;
+  color: #E2E8F0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.06);
+}
+
+.curieri-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.curieri-table tbody tr:hover {
+  background: rgba(148, 163, 184, 0.05);
+}
+
+/* Status Pills */
+.status-available {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ADE80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-busy {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: rgba(249, 115, 22, 0.15);
+  color: #FB923C;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+.status-offline {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: rgba(148, 163, 184, 0.15);
+  color: #94A3B8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+/* Stats */
+.stats-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-mini {
+  background: #1E293B;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stat-mini .value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #F8FAFC;
+}
+
+.stat-mini .label {
+  font-size: 0.85rem;
+  color: #94A3B8;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: #1E293B;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  color: #94A3B8;
+}
+
+/* Page Layout */
+.page-layout {
+  display: grid;
+  gap: 2rem;
+}
+
+.curieri-section h2,
+.colete-section h2 {
+  color: #F8FAFC;
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+/* Curieri Grid */
+.curieri-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.curier-card {
+  background: #1E293B;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.curier-card:hover {
+  border-color: rgba(124, 58, 237, 0.3);
+  transform: translateY(-2px);
+}
+
+.curier-avatar {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.curier-info h3 {
+  color: #F8FAFC;
+  font-size: 1.1rem;
+  margin: 0 0 0.25rem 0;
+}
+
+.curier-username {
+  color: #A855F7;
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.curier-contact {
+  color: #94A3B8;
+  font-size: 0.85rem;
+  margin: 0.25rem 0;
+}
+
+.curier-actions {
+  margin-top: 1rem;
+}
+
+.btn-view {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid rgba(124, 58, 237, 0.4);
+  border-radius: 8px;
+  color: #A855F7;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-view:hover {
+  background: rgba(124, 58, 237, 0.15);
+  border-color: #A855F7;
+}
+
+/* Colete List */
+.colete-list {
+  background: #1E293B;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  overflow: hidden;
+}
+
+.colet-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.06);
+}
+
+.colet-item:last-child {
+  border-bottom: none;
+}
+
+.colet-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.colet-awb {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  color: #A855F7;
+  font-weight: 500;
+}
+
+.colet-dest {
+  color: #E2E8F0;
+}
+
+.colet-service {
+  padding: 0.25rem 0.5rem;
+  background: rgba(148, 163, 184, 0.15);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: #94A3B8;
+}
+
+.curier-select {
+  padding: 0.5rem 1rem;
+  background: #0F172A;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  color: #F8FAFC;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.curier-select:focus {
+  outline: none;
+  border-color: #6366F1;
+}
+
+.curier-select option {
+  background: #1E293B;
+  color: #F8FAFC;
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  color: #94A3B8;
+  font-size: 1.1rem;
+}
+
+/* Subtitle */
+.subtitle {
+  color: #94A3B8;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .curieri-page {
+    padding: 1rem;
+  }
+
+  .stats-row {
+    flex-direction: column;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .curieri-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .colet-item {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+}

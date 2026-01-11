@@ -1,5 +1,6 @@
 package com.curier_app.curier_app.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,6 +22,7 @@ public class Utilizator {
     private String username;
 
     @Column(nullable = false)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String parola;
 
     @Column(length = 50)
@@ -37,4 +39,7 @@ public class Utilizator {
 
     @Column(nullable = false, length = 20)
     private String rol; // client, curier, sofer, admin
+
+    @Column(nullable = false)
+    private Boolean activ = true;
 }

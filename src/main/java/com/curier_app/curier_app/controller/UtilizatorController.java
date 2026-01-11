@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -31,7 +33,7 @@ public class UtilizatorController {
 
     // Endpoint pentru login (verifică username-ul și parola)
     @PostMapping("/login")
-    public ResponseEntity<String> loginUtilizator(@RequestBody Utilizator utilizator) {
+    public ResponseEntity<?> loginUtilizator(@RequestBody Utilizator utilizator) {
         Optional<Utilizator> optUtilizator = utilizatorService.findByUsername(utilizator.getUsername());
 
         if (optUtilizator.isEmpty()) {
@@ -45,6 +47,16 @@ public class UtilizatorController {
             return new ResponseEntity<>("Parolă incorectă!", HttpStatus.UNAUTHORIZED);
         }
 
-        return new ResponseEntity<>("Login cu succes!", HttpStatus.OK);
+        // Returnăm datele utilizatorului (fără parolă)
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", existingUser.getIdUtilizator());
+        response.put("username", existingUser.getUsername());
+        response.put("rol", existingUser.getRol());
+        response.put("nume", existingUser.getNume());
+        response.put("prenume", existingUser.getPrenume());
+        response.put("email", existingUser.getEmail());
+        response.put("message", "Login cu succes!");
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

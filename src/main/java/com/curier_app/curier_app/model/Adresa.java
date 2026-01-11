@@ -1,5 +1,6 @@
 package com.curier_app.curier_app.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,6 +20,7 @@ public class Adresa {
 
     @ManyToOne
     @JoinColumn(name = "id_utilizator") // FK către utilizator
+    @JsonIgnore
     private Utilizator utilizator;
 
     @Column(nullable = false, length = 50)
@@ -35,4 +37,26 @@ public class Adresa {
 
     @Column(name = "detalii_suplimentare", length = 100)
     private String detaliiSuplimentare;
+
+    // Câmpuri adiționale pentru adresă completă
+    @Column(length = 10)
+    private String bloc;
+
+    @Column(length = 10)
+    private String scara;
+
+    @Column(length = 10)
+    private String apartament;
+
+    @Column(length = 50)
+    private String judet;
+
+    @Column(length = 50)
+    private String tara;
+
+    @Column(name = "persoana_contact", length = 100)
+    private String persoanaContact;
+
+    @Column(name = "telefon_contact", length = 20)
+    private String telefonContact;
 }

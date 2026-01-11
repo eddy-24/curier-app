@@ -1,0 +1,9 @@
+/* Operator Layout - Dark Theme */
+.operator-layout {
+  min-height: 100vh;
+  background: #0B1120;
+}
+
+.operator-main {
+  padding: 0;
+}

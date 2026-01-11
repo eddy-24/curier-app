@@ -1,5 +1,6 @@
 package com.curier_app.curier_app.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -41,5 +42,6 @@ public class Comanda {
 
     // RELAȚIE 1 LA MULTE COLETE
     @OneToMany(mappedBy = "comanda", cascade = CascadeType.ALL)
+    @JsonManagedReference("comanda-colete")
     private List<Colet> colete;
 }

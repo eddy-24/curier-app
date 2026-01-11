@@ -15,7 +15,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/api/utilizatori/login', {
+      const response = await fetch('http://localhost:8081/api/utilizatori/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,10 +27,35 @@ const Login = () => {
       });
 
       if (response.ok) {
-        // Salvăm username-ul în localStorage
-        localStorage.setItem('username', username);
-        // Navigăm către dashboard
-        navigate('/dashboard');
+        const userData = await response.json();
+        
+        // Salvăm datele utilizatorului în localStorage
+        localStorage.setItem('userId', userData.id);
+        localStorage.setItem('username', userData.username);
+        localStorage.setItem('rol', userData.rol);
+        localStorage.setItem('nume', userData.nume);
+        localStorage.setItem('prenume', userData.prenume);
+        
+        // Redirecționăm în funcție de rol
+        switch (userData.rol) {
+          case 'client':
+            navigate('/client/dashboard');
+            break;
+          case 'operator':
+            navigate('/operator/dashboard');
+            break;
+          case 'curier':
+            navigate('/curier/dashboard');
+            break;
+          case 'sofer':
+            navigate('/sofer/dashboard');
+            break;
+          case 'admin':
+            navigate('/admin/dashboard');
+            break;
+          default:
+            navigate('/dashboard');
+        }
       } else {
         const errorText = await response.text();
         setError(errorText || 'Login failed');
@@ -86,6 +111,7 @@ const Login = () => {
         <div className="demo-credentials">
           <p><strong>Credențiale demo:</strong></p>
           <p>👤 client1 / pass123</p>
+          <p>📋 operator1 / pass123</p>
           <p>🚚 curier1 / pass123</p>
           <p>🔧 admin / admin123</p>
         </div>
