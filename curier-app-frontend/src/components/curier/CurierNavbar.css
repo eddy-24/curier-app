@@ -1,111 +1,115 @@
-/* Curier Navbar - Dark Theme (Mobile-First Bottom Navigation) */
-
+/* Curier Navbar - Dark Theme */
 .curier-navbar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
   display: flex;
-  justify-content: space-around;
   align-items: center;
-  background: #0F172A;
-  padding: 8px 0;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  justify-content: space-between;
+  background: #0B1120;
+  padding: 0 2rem;
+  height: 64px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  position: sticky;
+  top: 0;
   z-index: 1000;
-  border-top: 1px solid rgba(148, 163, 184, 0.1);
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
 }
 
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  color: #64748B;
-  padding: 8px 12px;
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  min-width: 50px;
-}
-
-.nav-item:hover {
+.navbar-brand a {
   color: #F8FAFC;
-  background: rgba(148, 163, 184, 0.1);
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.nav-item.active {
-  color: #A855F7;
-  background: rgba(168, 85, 247, 0.15);
+.navbar-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
 }
 
-.nav-icon {
-  font-size: 1.4rem;
-  margin-bottom: 4px;
-}
-
-.nav-label {
-  font-size: 0.65rem;
-  font-weight: 500;
+.badge-curier {
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: white;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.05em;
 }
 
-.logout-btn {
+.navbar-menu {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-link {
+  color: #94A3B8;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background: rgba(148, 163, 184, 0.1);
+  color: #F8FAFC;
+}
+
+.nav-link.active {
+  background: rgba(245, 158, 11, 0.15);
+  color: #F59E0B;
+}
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-name {
+  color: #94A3B8;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.btn-logout {
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.4);
   color: #F87171;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
 }
 
-.logout-btn:hover {
-  color: #EF4444;
+.btn-logout:hover {
   background: rgba(239, 68, 68, 0.15);
+  border-color: #EF4444;
 }
 
-/* Tablet and larger screens - side navigation */
-@media (min-width: 768px) {
+@media (max-width: 900px) {
   .curier-navbar {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: auto;
-    width: 80px;
-    flex-direction: column;
-    justify-content: flex-start;
-    padding: 20px 0;
-    border-radius: 0;
-    border-top-right-radius: 20px;
-    border-bottom-right-radius: 20px;
-    border-top: none;
-    border-right: 1px solid rgba(148, 163, 184, 0.1);
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+    flex-wrap: wrap;
+    height: auto;
+    padding: 1rem;
+    gap: 1rem;
   }
 
-  .nav-item {
-    width: 60px;
-    margin-bottom: 8px;
-    padding: 12px 10px;
+  .navbar-menu {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
-  .nav-icon {
-    font-size: 1.5rem;
-  }
-
-  .nav-label {
-    font-size: 0.6rem;
-  }
-
-  .logout-btn {
-    margin-top: auto;
-  }
-}
-
-/* Safe area for phones with notches */
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .curier-navbar {
-    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  .nav-link {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
   }
 }

@@ -163,10 +163,6 @@ export default function Curieri() {
                   <span>{curier.email || 'N/A'}</span>
                 </div>
               </div>
-              <button className="btn-view-details">
-                Vezi detalii
-                <span className="btn-arrow">→</span>
-              </button>
             </div>
           ))}
         </div>

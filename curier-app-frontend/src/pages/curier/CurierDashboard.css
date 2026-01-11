@@ -1,8 +1,10 @@
-/* Curier Dashboard - Dark Theme (Mobile-First) */
+/* Curier Dashboard - Dark Theme */
 
 .curier-dashboard {
-  max-width: 600px;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 24px;
+  color: #F8FAFC;
 }
 
 .curier-dashboard.loading {
@@ -345,4 +347,135 @@
   .action-buttons {
     grid-template-columns: repeat(4, 1fr);
   }
+}
+
+/* ========== RAMBURS SECTION ========== */
+.ramburs-section {
+  background: #1E293B;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ramburs-section:hover {
+  background: #253449;
+  border-color: rgba(245, 158, 11, 0.3);
+  transform: translateY(-2px);
+}
+
+.ramburs-section h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #F8FAFC;
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ramburs-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ramburs-card {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  border: 1px solid rgba(148, 163, 184, 0.05);
+}
+
+.ramburs-card.pending {
+  border-left: 4px solid #F59E0B;
+}
+
+.ramburs-card.collected {
+  border-left: 4px solid #10B981;
+}
+
+.ramburs-label {
+  display: block;
+  font-size: 0.8rem;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.ramburs-value {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #F8FAFC;
+  font-family: 'SF Mono', Monaco, monospace;
+}
+
+.ramburs-card.pending .ramburs-value {
+  color: #FDE68A;
+}
+
+.ramburs-card.collected .ramburs-value {
+  color: #A7F3D0;
+}
+
+/* ========== ACTIONS SECTION ========== */
+.quick-actions h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #F8FAFC;
+  margin: 0 0 16px 0;
+}
+
+.action-btn {
+  background: #1E293B;
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #F8FAFC;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-btn:hover {
+  background: #253449;
+  border-color: rgba(245, 158, 11, 0.3);
+  transform: translateY(-2px);
+}
+
+.btn-icon {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+.action-btn span:not(.btn-icon) {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #E2E8F0;
+}
+
+/* ========== GLOBAL TEXT COLORS ========== */
+.curier-dashboard {
+  color: #F8FAFC;
+}
+
+.curier-dashboard h1,
+.curier-dashboard h2,
+.curier-dashboard h3 {
+  color: #F8FAFC;
+}
+
+.curier-dashboard p {
+  color: #E2E8F0;
 }

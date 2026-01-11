@@ -1,32 +1,9 @@
-/* Curier Layout - Dark Theme (Mobile-First) */
-
+/* Curier Layout - Dark Theme */
 .curier-layout {
   min-height: 100vh;
   background: #0B1120;
-  display: flex;
-  flex-direction: column;
 }
 
-.curier-content {
-  flex: 1;
-  padding: 16px;
-  padding-bottom: 90px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Tablet and larger screens */
-@media (min-width: 768px) {
-  .curier-content {
-    margin-left: 80px;
-    padding: 24px;
-    padding-bottom: 24px;
-  }
-}
-
-/* Safe area for phones with notches */
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .curier-content {
-    padding-bottom: calc(90px + env(safe-area-inset-bottom));
-  }
+.curier-main {
+  padding: 0;
 }

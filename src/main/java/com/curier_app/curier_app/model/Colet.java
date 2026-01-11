@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -40,8 +42,14 @@ public class Colet {
     @Column(name = "pret_declarat", precision = 8, scale = 2)
     private BigDecimal pretDeclarat;
 
+    @Column(name = "ramburs_incasat")
+    private Boolean rambursIncasat = false;
+
     @Column(name = "status_colet", length = 20, nullable = false)
     private String statusColet = "in_asteptare";
+
+    @Column(name = "data_livrare")
+    private LocalDateTime dataLivrare;
 
     @ManyToOne
     @JoinColumn(name = "id_adresa_expeditor", nullable = false)

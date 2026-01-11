@@ -144,10 +144,9 @@ const ColetUpdate = () => {
   };
 
   const handleSubmit = async () => {
-    const userData = localStorage.getItem('user');
-    if (!userData || !coletId) return;
+    const userId = localStorage.getItem('userId');
+    if (!userId || !coletId) return;
     
-    const user = JSON.parse(userData);
     setSubmitting(true);
     
     try {
@@ -155,7 +154,7 @@ const ColetUpdate = () => {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          curierId: user.idUtilizator,
+          curierId: parseInt(userId),
           status: selectedStatus,
           locatie: locatie,
           semnatura: getSignatureData(),

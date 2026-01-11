@@ -335,9 +335,12 @@ public class OperatorController {
             return ResponseEntity.badRequest().body("Curier negăsit");
         }
 
+
         Colet colet = optColet.get();
         Utilizator curier = optCurier.get();
 
+        // Setează curierul pe colet
+        colet.setCurier(curier);
         // Actualizează statusul coletului
         colet.setStatusColet("preluat_curier");
         coletRepository.save(colet);

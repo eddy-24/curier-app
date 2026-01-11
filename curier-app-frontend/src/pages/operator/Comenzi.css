@@ -1,3 +1,75 @@
+/* Modal Date Picker - Schimbă data livrare */
+.date-modal, .problem-modal {
+  background: #111827;
+  border-radius: 12px;
+  box-shadow: 0 4px 32px 0 rgba(0,0,0,0.25);
+  padding: 1.25rem 1.5rem 1rem 1.5rem;
+  margin-top: 1.25rem;
+  border: 1px solid rgba(99,102,241,0.08);
+  max-width: 100%;
+}
+
+.date-modal h4, .problem-modal h4 {
+  color: #A78BFA;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.date-modal input[type="date"], .problem-modal textarea {
+  width: 100%;
+  background: #1E293B;
+  border: 1px solid #374151;
+  color: #F8FAFC;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  transition: border 0.2s;
+}
+.date-modal input[type="date"]:focus, .problem-modal textarea:focus {
+  border-color: #6366F1;
+  outline: none;
+}
+
+.date-modal .btn-primary, .problem-modal .btn-primary {
+  background: linear-gradient(135deg, #8B5CF6, #6366F1);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.date-modal .btn-primary:disabled, .problem-modal .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.date-modal .btn-secondary, .problem-modal .btn-secondary, .problem-modal .btn-danger {
+  background: #374151;
+  color: #F8FAFC;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.date-modal .btn-secondary:hover, .problem-modal .btn-secondary:hover, .problem-modal .btn-danger:hover {
+  background: #4B5563;
+}
+.problem-modal .btn-danger {
+  background: #EF4444;
+  color: #fff;
+}
+.problem-modal .btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 /* Operator Comenzi Page - Dark Theme */
 
 .comenzi-page {

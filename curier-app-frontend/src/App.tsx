@@ -59,8 +59,8 @@ function App() {
         <Route path="/operator/curieri" element={<OperatorLayout><Curieri /></OperatorLayout>} />
         <Route path="/operator/shipments" element={<OperatorLayout><ShipmentsQueuePage /></OperatorLayout>} />
 
-        {/* Curier Routes (Mobile-First) */}
-        <Route path="/curier" element={<CurierLayout onLogout={handleLogout} />}>
+        {/* Curier Routes (Desktop Layout) */}
+        <Route path="/curier" element={<CurierLayout />}>
           <Route path="dashboard" element={<CurierDashboard />} />
           <Route path="pickups" element={<PickupuriAzi />} />
           <Route path="livrari" element={<LivrariAzi />} />

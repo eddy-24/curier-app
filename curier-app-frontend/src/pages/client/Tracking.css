@@ -155,6 +155,19 @@
   font-weight: 500;
 }
 
+.payment-status {
+  font-size: 0.85rem;
+  margin-left: 8px;
+}
+
+.payment-status.paid {
+  color: #10B981;
+}
+
+.payment-status.pending {
+  color: #F59E0B;
+}
+
 /* Timeline */
 .timeline-section {
   background: rgba(30, 30, 60, 0.6);

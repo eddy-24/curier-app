@@ -1,20 +1,15 @@
+import type { ReactNode } from 'react';
 import { Outlet } from 'react-router-dom';
 import CurierNavbar from './CurierNavbar';
 import './CurierLayout.css';
 
-interface CurierLayoutProps {
-  onLogout: () => void;
-}
-
-const CurierLayout = ({ onLogout }: CurierLayoutProps) => {
+export default function CurierLayout() {
   return (
     <div className="curier-layout">
-      <main className="curier-content">
+      <CurierNavbar />
+      <main className="curier-main">
         <Outlet />
       </main>
-      <CurierNavbar onLogout={onLogout} />
     </div>
   );
-};
-
-export default CurierLayout;
+}

@@ -332,6 +332,70 @@ public class CurierController {
         
         return ResponseEntity.ok(result);
     }
+    
+    /**
+     * POST /api/curier/{curierId}/ramburs/{coletId}/incaseaza
+     * Marchează un ramburs ca fiind încasat
+     */
+    @PostMapping("/{curierId}/ramburs/{coletId}/incaseaza")
+    public ResponseEntity<Map<String, Object>> incaseazaRamburs(
+            @PathVariable Long curierId,
+            @PathVariable Long coletId,
+            @RequestBody(required = false) Map<String, Object> requestBody) {
+        
+        Optional<Colet> optColet = coletRepository.findById(coletId);
+        if (!optColet.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        Colet colet = optColet.get();
+        
+        // Verifică dacă coletul este asignat curierului
+        if (colet.getComanda() == null || colet.getComanda().getCurier() == null || 
+            !colet.getComanda().getCurier().getIdUtilizator().equals(curierId)) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        // Marchează coletul ca livrat și rambursul ca încasat
+        colet.setStatusColet("livrat");
+        colet.setRambursIncasat(true);
+        colet.setDataLivrare(LocalDateTime.now());
+        coletRepository.save(colet);
+
+        // Actualizează statusul comenzii dacă toate coletele sunt livrate
+        Comanda comanda = colet.getComanda();
+        if (comanda != null) {
+            List<Colet> coleteComenzi = coletRepository.findAll().stream()
+                    .filter(c -> c.getComanda() != null && 
+                                c.getComanda().getIdComanda().equals(comanda.getIdComanda()))
+                    .collect(Collectors.toList());
+            
+            boolean toateColeteLivrate = coleteComenzi.stream()
+                    .allMatch(c -> "livrat".equals(c.getStatusColet()));
+            
+            if (toateColeteLivrate && !"livrata".equals(comanda.getStatusComanda())) {
+                comanda.setStatusComanda("livrata");
+                comandaRepository.save(comanda);
+            }
+        }
+
+        // Adaugă tracking event
+        TrackingEvent trackingEvent = new TrackingEvent();
+        trackingEvent.setColet(colet);
+        trackingEvent.setStatus("livrat");
+        trackingEvent.setDataEvent(LocalDateTime.now());
+        trackingEvent.setDescriere("Colet livrat cu ramburs încasat - suma " + colet.getPretDeclarat() + " RON");
+        trackingEvent.setUtilizator(colet.getComanda().getCurier());
+        trackingEventRepository.save(trackingEvent);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Ramburs încasat cu succes");
+        response.put("coletId", coletId);
+        response.put("suma", colet.getPretDeclarat());
+        
+        return ResponseEntity.ok(response);
+    }
 
     // ==================== HELPER METHODS ====================
     

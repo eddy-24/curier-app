@@ -20,10 +20,9 @@ const PickupuriAzi = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const user = JSON.parse(userData);
-      fetchPickups(user.idUtilizator);
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      fetchPickups(parseInt(userId));
     }
   }, []);
 

@@ -18,20 +18,33 @@ const CurierDashboard = () => {
   const [userName, setUserName] = useState('');
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const user = JSON.parse(userData);
-      setUserName(`${user.prenume} ${user.nume}`);
-      fetchDashboard(user.idUtilizator);
+    // Citim datele din localStorage - salvate individual
+    const userId = localStorage.getItem('userId');
+    const nume = localStorage.getItem('nume');
+    const prenume = localStorage.getItem('prenume');
+    
+    console.log('localStorage data:', { userId, nume, prenume });
+    
+    if (userId && nume && prenume) {
+      setUserName(`${prenume} ${nume}`);
+      fetchDashboard(parseInt(userId));
+    } else {
+      console.log('Missing user data in localStorage');
+      setLoading(false);
     }
   }, []);
 
   const fetchDashboard = async (curierId: number) => {
     try {
+      console.log('Fetching dashboard for curierId:', curierId);
       const response = await fetch(`http://localhost:8081/api/curier/${curierId}/dashboard`);
+      console.log('Response status:', response.status);
       if (response.ok) {
         const data = await response.json();
+        console.log('Dashboard data:', data);
         setStats(data);
+      } else {
+        console.error('Response not ok:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error fetching dashboard:', error);

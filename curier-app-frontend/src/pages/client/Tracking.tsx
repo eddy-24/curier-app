@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+interface Expediere {
+  idComanda: number;
+  dataCreare: string;
+  colete: Colet[];
+}
 import './Tracking.css';
 
 interface TrackingEvent {
@@ -16,6 +21,8 @@ interface Colet {
   statusColet: string;
   tipServiciu: string;
   greutateKg: number;
+  pretDeclarat?: number;
+  rambursIncasat?: boolean;
   adresaExpeditor: {
     oras: string;
     strada: string;
@@ -36,11 +43,21 @@ export default function Tracking() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [searched, setSearched] = useState(false);
+  const [expedieri, setExpedieri] = useState<Expediere[]>([]);
+  const [expedieriLoading, setExpedieriLoading] = useState(true);
 
   useEffect(() => {
     if (codAwb) {
       searchAwb(codAwb);
     }
+    // Fetch expedieri la mount
+    const clientId = localStorage.getItem('userId') || '1';
+    setExpedieriLoading(true);
+    fetch(`http://localhost:8081/api/client/${clientId}/expedieri`)
+      .then(res => res.ok ? res.json() : [])
+      .then(data => setExpedieri(data))
+      .catch(() => setExpedieri([]))
+      .finally(() => setExpedieriLoading(false));
   }, [codAwb]);
 
   const searchAwb = async (awbCode: string) => {
@@ -95,11 +112,50 @@ export default function Tracking() {
     });
   };
 
+
   return (
     <div className="tracking-page">
       <header className="page-header">
         <h1>Tracking expediere</h1>
       </header>
+
+      {/* Lista expedieri */}
+      <div className="search-section" style={{ marginBottom: 32 }}>
+        <h2 style={{ fontSize: '1.1rem', color: '#c7d2fe', marginBottom: 12 }}>Expedierile mele</h2>
+        {expedieriLoading ? (
+          <div style={{ color: '#94A3B8', padding: 16 }}>Se încarcă...</div>
+        ) : expedieri.length === 0 ? (
+          <div style={{ color: '#94A3B8', padding: 16 }}>Nu ai expedieri înregistrate.</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {expedieri.flatMap(exp => exp.colete.map(colet => (
+              <button
+                key={colet.codAwb}
+                style={{
+                  background: awb === colet.codAwb ? 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)' : 'rgba(30,30,60,0.6)',
+                  color: awb === colet.codAwb ? '#fff' : '#c7d2fe',
+                  border: '1px solid #312e81',
+                  borderRadius: 10,
+                  padding: '0.7rem 1.2rem',
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 16,
+                  boxShadow: awb === colet.codAwb ? '0 4px 15px rgba(249,115,22,0.25)' : 'none',
+                  outline: 'none',
+                  borderWidth: awb === colet.codAwb ? 2 : 1
+                }}
+                onClick={() => { setAwb(colet.codAwb); searchAwb(colet.codAwb); }}
+              >
+                <span style={{ fontFamily: 'monospace', fontSize: '1.1em' }}>{colet.codAwb}</span>
+                <span style={{ fontSize: '0.9em', opacity: 0.7 }}>{colet.statusColet.replace('_', ' ')}</span>
+              </button>
+            )))}
+          </div>
+        )}
+      </div>
 
       {/* Search Form */}
       <div className="search-section">
@@ -141,6 +197,17 @@ export default function Tracking() {
                 <span className="info-label">Greutate</span>
                 <span className="info-value">{colet.greutateKg} kg</span>
               </div>
+              {colet.pretDeclarat && colet.pretDeclarat > 0 && (
+                <div className="info-item">
+                  <span className="info-label">Ramburs</span>
+                  <span className="info-value">
+                    {colet.pretDeclarat.toFixed(2)} RON
+                    <span className={`payment-status ${colet.rambursIncasat ? 'paid' : 'pending'}`}>
+                      {colet.rambursIncasat ? ' (✅ Încasat)' : ' (⏳ Neîncasat)'}
+                    </span>
+                  </span>
+                </div>
+              )}
               <div className="info-item">
                 <span className="info-label">De la</span>
                 <span className="info-value">

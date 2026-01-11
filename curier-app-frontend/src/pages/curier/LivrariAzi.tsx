@@ -22,10 +22,9 @@ const LivrariAzi = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const user = JSON.parse(userData);
-      fetchLivrari(user.idUtilizator);
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      fetchLivrari(parseInt(userId));
     }
   }, []);
 

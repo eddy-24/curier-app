@@ -40,69 +40,90 @@ public class DataInitializer {
 
             System.out.println("Populăm baza de date cu date de test...");
 
-            // 1. UTILIZATORI (5 clienti, 3 curieri, 2 soferi, 1 admin)
+            // 1. UTILIZATORI REALIȘTI
             List<Utilizator> utilizatori = new ArrayList<>();
             
-            // Clienti
-            for (int i = 1; i <= 5; i++) {
-                Utilizator client = new Utilizator();
-                client.setUsername("client" + i);
-                client.setParola(passwordEncoder.encode("pass123"));
-                client.setNume("Popescu");
-                client.setPrenume("Client" + i);
-                client.setTelefon("071234567" + i);
-                client.setEmail("client" + i + "@example.com");
-                client.setRol("client");
-                utilizatori.add(utilizatorRepo.save(client));
-            }
+            // 3 Clienti realiști
+            Utilizator client1 = new Utilizator();
+            client1.setUsername("andreea.popescu");
+            client1.setParola(passwordEncoder.encode("pass123"));
+            client1.setNume("Popescu");
+            client1.setPrenume("Andreea");
+            client1.setTelefon("0722123456");
+            client1.setEmail("andreea.popescu@gmail.com");
+            client1.setRol("client");
+            utilizatori.add(utilizatorRepo.save(client1));
 
-            // Curieri
-            for (int i = 1; i <= 3; i++) {
-                Utilizator curier = new Utilizator();
-                curier.setUsername("curier" + i);
-                curier.setParola(passwordEncoder.encode("pass123"));
-                curier.setNume("Ionescu");
-                curier.setPrenume("Curier" + i);
-                curier.setTelefon("072234567" + i);
-                curier.setEmail("curier" + i + "@example.com");
-                curier.setRol("curier");
-                utilizatori.add(utilizatorRepo.save(curier));
-            }
+            Utilizator client2 = new Utilizator();
+            client2.setUsername("mihai.ionescu");
+            client2.setParola(passwordEncoder.encode("pass123"));
+            client2.setNume("Ionescu");
+            client2.setPrenume("Mihai");
+            client2.setTelefon("0733654321");
+            client2.setEmail("mihai.ionescu@yahoo.com");
+            client2.setRol("client");
+            utilizatori.add(utilizatorRepo.save(client2));
 
-            // Soferi
-            for (int i = 1; i <= 2; i++) {
-                Utilizator sofer = new Utilizator();
-                sofer.setUsername("sofer" + i);
-                sofer.setParola(passwordEncoder.encode("pass123"));
-                sofer.setNume("Georgescu");
-                sofer.setPrenume("Sofer" + i);
-                sofer.setTelefon("073234567" + i);
-                sofer.setEmail("sofer" + i + "@example.com");
-                sofer.setRol("sofer");
-                utilizatori.add(utilizatorRepo.save(sofer));
-            }
+            Utilizator client3 = new Utilizator();
+            client3.setUsername("elena.georgescu");
+            client3.setParola(passwordEncoder.encode("pass123"));
+            client3.setNume("Georgescu");
+            client3.setPrenume("Elena");
+            client3.setTelefon("0744987654");
+            client3.setEmail("elena.georgescu@outlook.com");
+            client3.setRol("client");
+            utilizatori.add(utilizatorRepo.save(client3));
 
-            // Operatori
-            for (int i = 1; i <= 2; i++) {
-                Utilizator operator = new Utilizator();
-                operator.setUsername("operator" + i);
-                operator.setParola(passwordEncoder.encode("pass123"));
-                operator.setNume("Marinescu");
-                operator.setPrenume("Operator" + i);
-                operator.setTelefon("074234567" + i);
-                operator.setEmail("operator" + i + "@example.com");
-                operator.setRol("operator");
-                utilizatori.add(utilizatorRepo.save(operator));
-            }
+            // 3 Curieri realiști
+            Utilizator curier1 = new Utilizator();
+            curier1.setUsername("dan.curier");
+            curier1.setParola(passwordEncoder.encode("pass123"));
+            curier1.setNume("Marinescu");
+            curier1.setPrenume("Dan");
+            curier1.setTelefon("0755111222");
+            curier1.setEmail("dan.marinescu@curierapp.ro");
+            curier1.setRol("curier");
+            utilizatori.add(utilizatorRepo.save(curier1));
+
+            Utilizator curier2 = new Utilizator();
+            curier2.setUsername("ana.transport");
+            curier2.setParola(passwordEncoder.encode("pass123"));
+            curier2.setNume("Stoica");
+            curier2.setPrenume("Ana");
+            curier2.setTelefon("0766333444");
+            curier2.setEmail("ana.stoica@curierapp.ro");
+            curier2.setRol("curier");
+            utilizatori.add(utilizatorRepo.save(curier2));
+
+            Utilizator curier3 = new Utilizator();
+            curier3.setUsername("radu.livrator");
+            curier3.setParola(passwordEncoder.encode("pass123"));
+            curier3.setNume("Dobre");
+            curier3.setPrenume("Radu");
+            curier3.setTelefon("0777555666");
+            curier3.setEmail("radu.dobre@curierapp.ro");
+            curier3.setRol("curier");
+            utilizatori.add(utilizatorRepo.save(curier3));
+
+            // 1 Operator
+            Utilizator operator = new Utilizator();
+            operator.setUsername("maria.operator");
+            operator.setParola(passwordEncoder.encode("pass123"));
+            operator.setNume("Vasile");
+            operator.setPrenume("Maria");
+            operator.setTelefon("0788777888");
+            operator.setEmail("maria.vasile@curierapp.ro");
+            operator.setRol("operator");
+            utilizatori.add(utilizatorRepo.save(operator));
 
             // Admin
             Utilizator admin = new Utilizator();
-            admin.setUsername("admin");
-            admin.setParola(passwordEncoder.encode("admin123"));
+            admin.setUsername("admin.sistem");
+            admin.setParola(passwordEncoder.encode("pass123"));
             admin.setNume("Administrator");
-            admin.setPrenume("System");
+            admin.setPrenume("Sistem");
             admin.setTelefon("0700000000");
-            admin.setEmail("admin@curierapp.com");
+            admin.setEmail("admin@curierapp.ro");
             admin.setRol("admin");
             utilizatori.add(utilizatorRepo.save(admin));
 

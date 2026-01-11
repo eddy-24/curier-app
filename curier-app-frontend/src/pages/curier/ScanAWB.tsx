@@ -90,14 +90,17 @@ const ScanAWB = () => {
   return (
     <div className="scan-page">
       <header className="page-header">
-        <h1>📷 Scanează AWB</h1>
+        <h1>
+          <span>📷</span>
+          Scanează AWB
+        </h1>
       </header>
 
       <div className="scan-input-section">
         <div className="input-container">
           <input
             type="text"
-            placeholder="Introdu codul AWB..."
+            placeholder="Introdu codul AWB... (ex: AWBF253EFDC)"
             value={awbInput}
             onChange={(e) => setAwbInput(e.target.value.toUpperCase())}
             onKeyPress={handleKeyPress}
@@ -112,7 +115,7 @@ const ScanAWB = () => {
             {loading ? '⏳' : '🔍'}
           </button>
         </div>
-        {error && <p className="error-message">{error}</p>}
+        {error && <div className="error-message">{error}</div>}
       </div>
 
       {colet && (

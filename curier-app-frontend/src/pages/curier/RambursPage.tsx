@@ -22,10 +22,9 @@ const RambursPage = () => {
   const [activeTab, setActiveTab] = useState<'neincasate' | 'incasate'>('neincasate');
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      const user = JSON.parse(userData);
-      fetchRamburs(user.idUtilizator);
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      fetchRamburs(parseInt(userId));
     }
   }, []);
 
@@ -40,6 +39,40 @@ const RambursPage = () => {
       console.error('Error fetching ramburs:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const incaseazaRamburs = async (coletId: number, suma: number) => {
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      alert('Nu sunteți autentificat!');
+      return;
+    }
+
+    if (!confirm(`Confirmați încasarea rambursului de ${suma.toFixed(2)} RON?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8081/api/curier/${userId}/ramburs/${coletId}/incaseaza`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({})
+      });
+
+      if (response.ok) {
+        await response.json();
+        alert(`Ramburs de ${suma.toFixed(2)} RON încasat cu succes!`);
+        // Reîncarcă datele
+        fetchRamburs(parseInt(userId));
+      } else {
+        throw new Error('Eroare la încasarea rambursului');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Eroare la încasarea rambursului!');
     }
   };
 
@@ -99,7 +132,15 @@ const RambursPage = () => {
               <div key={item.idColet} className="ramburs-item pending">
                 <div className="item-header">
                   <span className="awb">{item.codAwb}</span>
-                  <span className="suma">{item.suma?.toFixed(2)} RON</span>
+                  <div className="item-actions">
+                    <span className="suma">{item.suma?.toFixed(2)} RON</span>
+                    <button 
+                      className="collect-button"
+                      onClick={() => incaseazaRamburs(item.idColet, item.suma)}
+                    >
+                      Încasează
+                    </button>
+                  </div>
                 </div>
                 {item.destinatar && (
                   <p className="destinatar">📍 {item.destinatar}</p>

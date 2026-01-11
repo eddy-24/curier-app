@@ -30,6 +30,35 @@ export default function Comenzi() {
   const [filter, setFilter] = useState(searchParams.get('status') || 'toate');
   const [selectedComanda, setSelectedComanda] = useState<Comanda | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showProblem, setShowProblem] = useState(false);
+  const [problemText, setProblemText] = useState('');
+  const [problemLoading, setProblemLoading] = useState(false);
+  const [showCancel, setShowCancel] = useState(false);
+  const [cancelText, setCancelText] = useState('');
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [showDate, setShowDate] = useState(false);
+  const [newDate, setNewDate] = useState('');
+  const [dateLoading, setDateLoading] = useState(false);
+  const handleChangeDate = async (comandaId: number, dataLivrare: string) => {
+    try {
+      setDateLoading(true);
+      const res = await fetch(`http://localhost:8081/api/operator/comenzi/${comandaId}/data-livrare`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dataLivrare })
+      });
+      if (res.ok) {
+        fetchComenzi();
+        setShowModal(false);
+        setShowDate(false);
+        setNewDate('');
+      }
+    } catch (error) {
+      console.error('Eroare:', error);
+    } finally {
+      setDateLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchComenzi();
@@ -53,20 +82,29 @@ export default function Comenzi() {
     }
   };
 
-  const handleStatusChange = async (comandaId: number, newStatus: string) => {
+  const handleStatusChange = async (comandaId: number, newStatus: string, motiv?: string) => {
     try {
+      if (newStatus === 'problema') setProblemLoading(true);
+      if (newStatus === 'anulata') setCancelLoading(true);
       const res = await fetch(`http://localhost:8081/api/operator/comenzi/${comandaId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify(motiv ? { status: newStatus, motiv } : { status: newStatus })
       });
 
       if (res.ok) {
         fetchComenzi();
         setShowModal(false);
+        setShowProblem(false);
+        setProblemText('');
+        setShowCancel(false);
+        setCancelText('');
       }
     } catch (error) {
       console.error('Eroare:', error);
+    } finally {
+      setProblemLoading(false);
+      setCancelLoading(false);
     }
   };
 
@@ -224,19 +262,124 @@ export default function Comenzi() {
               </div>
 
               <div className="detail-section">
-                <h3>Schimbă status</h3>
-                <div className="status-buttons">
-                  {['noua', 'in_procesare', 'finalizata', 'problema', 'anulata'].map((s) => (
-                    <button
-                      key={s}
-                      className={`status-btn ${s} ${selectedComanda.statusComanda === s ? 'current' : ''}`}
-                      onClick={() => handleStatusChange(selectedComanda.idComanda, s)}
-                      disabled={selectedComanda.statusComanda === s}
-                    >
-                      {getStatusLabel(s)}
-                    </button>
-                  ))}
+                <h3>Schimbă status sau dată livrare</h3>
+                <div className="status-buttons" style={{ flexWrap: 'wrap', gap: 8 }}>
+                  {['noua', 'in_procesare', 'finalizata', 'problema', 'anulata'].map((s) => {
+                    if (s === 'problema') {
+                      return (
+                        <button
+                          key={s}
+                          className={`status-btn ${s} ${selectedComanda.statusComanda === s ? 'current' : ''}`}
+                          onClick={() => setShowProblem(true)}
+                          disabled={selectedComanda.statusComanda === s}
+                        >
+                          Raportează problemă
+                        </button>
+                      );
+                    } else if (s === 'anulata') {
+                      return (
+                        <button
+                          key={s}
+                          className={`status-btn ${s} ${selectedComanda.statusComanda === s ? 'current' : ''}`}
+                          onClick={() => setShowCancel(true)}
+                          disabled={selectedComanda.statusComanda === s}
+                        >
+                          Anulează comandă
+                        </button>
+                      );
+                    } else {
+                      return (
+                        <button
+                          key={s}
+                          className={`status-btn ${s} ${selectedComanda.statusComanda === s ? 'current' : ''}`}
+                          onClick={() => handleStatusChange(selectedComanda.idComanda, s)}
+                          disabled={selectedComanda.statusComanda === s}
+                        >
+                          {getStatusLabel(s)}
+                        </button>
+                      );
+                    }
+                  })}
+                  <button
+                    className="status-btn date"
+                    style={{ background: '#e0e0ff', color: '#222', border: '1px solid #b3b3ff' }}
+                    onClick={() => setShowDate(true)}
+                  >
+                    Schimbă data livrare
+                  </button>
                 </div>
+                                {showDate && (
+                                  <div className="problem-modal">
+                                    <h4>Schimbă data de livrare</h4>
+                                    <input
+                                      type="date"
+                                      value={newDate}
+                                      onChange={e => setNewDate(e.target.value)}
+                                      min={new Date().toISOString().split('T')[0]}
+                                      style={{ width: '100%', marginBottom: 8 }}
+                                    />
+                                    <div style={{ display: 'flex', gap: 8 }}>
+                                      <button
+                                        className="btn-primary"
+                                        disabled={!newDate || dateLoading}
+                                        onClick={() => handleChangeDate(selectedComanda.idComanda, newDate)}
+                                      >
+                                        Confirmă
+                                      </button>
+                                      <button className="btn-secondary" onClick={() => setShowDate(false)} disabled={dateLoading}>
+                                        Renunță
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                {showProblem && (
+                  <div className="problem-modal">
+                    <h4>Descrie problema</h4>
+                    <textarea
+                      value={problemText}
+                      onChange={e => setProblemText(e.target.value)}
+                      placeholder="Descrie problema comenzii..."
+                      rows={3}
+                      style={{ width: '100%' }}
+                    />
+                    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                      <button
+                        className="btn-primary"
+                        disabled={!problemText.trim() || problemLoading}
+                        onClick={() => handleStatusChange(selectedComanda.idComanda, 'problema', problemText)}
+                      >
+                        Trimite
+                      </button>
+                      <button className="btn-secondary" onClick={() => setShowProblem(false)} disabled={problemLoading}>
+                        Renunță
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {showCancel && (
+                  <div className="problem-modal">
+                    <h4>Motiv anulare comandă</h4>
+                    <textarea
+                      value={cancelText}
+                      onChange={e => setCancelText(e.target.value)}
+                      placeholder="Motivul anulării..."
+                      rows={3}
+                      style={{ width: '100%' }}
+                    />
+                    <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                      <button
+                        className="btn-danger"
+                        disabled={!cancelText.trim() || cancelLoading}
+                        onClick={() => handleStatusChange(selectedComanda.idComanda, 'anulata', cancelText)}
+                      >
+                        Confirmă anularea
+                      </button>
+                      <button className="btn-secondary" onClick={() => setShowCancel(false)} disabled={cancelLoading}>
+                        Renunță
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
