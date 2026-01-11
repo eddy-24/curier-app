@@ -50,4 +50,8 @@ public class Colet {
     @ManyToOne
     @JoinColumn(name = "id_adresa_destinatar", nullable = false)
     private Adresa adresaDestinatar;
+
+    @ManyToOne
+    @JoinColumn(name = "id_curier")
+    private Utilizator curier;
 }

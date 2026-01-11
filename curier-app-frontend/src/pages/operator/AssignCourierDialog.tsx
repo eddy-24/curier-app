@@ -1,21 +1,32 @@
 import { useState, useEffect } from 'react';
 import './AssignCourierDialog.css';
 
+interface Ruta {
+  origine: string;
+  destinatie: string;
+}
+
 interface Curier {
-  idUtilizator: number;
+  id: number;
+  idUtilizator?: number;
   username: string;
   nume: string;
   prenume: string;
   telefon: string;
   email: string;
+  rute?: Ruta[];
+  areRutaCompatibila?: boolean;
   coleteAsignate?: number;
-  zonaCurent?: string;
   status?: 'disponibil' | 'ocupat' | 'offline';
 }
 
 interface Colet {
   idColet: number;
   codAwb: string;
+  adresaExpeditor?: {
+    oras: string;
+    judet: string;
+  } | null;
   adresaDestinatar?: {
     oras: string;
     judet: string;
@@ -23,7 +34,7 @@ interface Colet {
 }
 
 interface AssignCourierDialogProps {
-  colet: Colet | null; // null pentru asignare multiplă
+  colet: Colet | null;
   selectedCount: number;
   onAssign: (curierId: number) => void;
   onClose: () => void;
@@ -39,26 +50,44 @@ export default function AssignCourierDialog({
   const [loading, setLoading] = useState(true);
   const [selectedCurier, setSelectedCurier] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterZona, setFilterZona] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+  const [showOnlyCompatible, setShowOnlyCompatible] = useState(true);
   const [assigning, setAssigning] = useState(false);
+
+  const destinatieOras = colet?.adresaDestinatar?.oras || '';
+  const destinatieJudet = colet?.adresaDestinatar?.judet || '';
 
   useEffect(() => {
     fetchCurieri();
-  }, []);
+  }, [colet]);
 
   const fetchCurieri = async () => {
     try {
-      const res = await fetch('http://localhost:8081/api/operator/curieri');
+      // Construim URL cu parametri de destinație
+      let url = 'http://localhost:8081/api/operator/curieri';
+      if (destinatieOras) {
+        url += `?orasDestinatie=${encodeURIComponent(destinatieOras)}`;
+        if (destinatieJudet) {
+          url += `&judetDestinatie=${encodeURIComponent(destinatieJudet)}`;
+        }
+      }
+
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
-        // Adăugăm date mock pentru demo
-        const curieriWithStats = data.map((c: Curier, index: number) => ({
+        const curieriWithStats = data.map((c: Curier) => ({
           ...c,
+          id: c.id || c.idUtilizator,
           coleteAsignate: Math.floor(Math.random() * 15),
-          zonaCurent: ['București', 'Cluj', 'Timișoara', 'Iași', 'Brașov'][index % 5],
-          status: ['disponibil', 'disponibil', 'ocupat', 'disponibil', 'offline'][index % 5] as Curier['status']
+          status: c.areRutaCompatibila ? 'disponibil' : 'ocupat'
         }));
+        
+        // Sortăm: curieri cu rută compatibilă primii
+        curieriWithStats.sort((a: Curier, b: Curier) => {
+          if (a.areRutaCompatibila && !b.areRutaCompatibila) return -1;
+          if (!a.areRutaCompatibila && b.areRutaCompatibila) return 1;
+          return 0;
+        });
+        
         setCurieri(curieriWithStats);
       }
     } catch (error) {
@@ -74,13 +103,14 @@ export default function AssignCourierDialog({
       c.prenume?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.username?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchZona = filterZona === '' || c.zonaCurent === filterZona;
-    const matchStatus = filterStatus === '' || c.status === filterStatus;
+    // Filtrare după compatibilitate rută
+    const matchCompatibil = !showOnlyCompatible || c.areRutaCompatibila !== false;
 
-    return matchSearch && matchZona && matchStatus;
+    return matchSearch && matchCompatibil;
   });
 
-  const zone = [...new Set(curieri.map(c => c.zonaCurent).filter(Boolean))];
+  const curieriCompatibili = curieri.filter(c => c.areRutaCompatibila).length;
+  const curieriTotal = curieri.length;
 
   const handleAssign = async () => {
     if (!selectedCurier) return;
@@ -93,22 +123,14 @@ export default function AssignCourierDialog({
     }
   };
 
-  const getStatusColor = (status: string | undefined) => {
-    switch (status) {
-      case 'disponibil': return '#28a745';
-      case 'ocupat': return '#ffc107';
-      case 'offline': return '#6c757d';
-      default: return '#6c757d';
-    }
+  const getStatusColor = (curier: Curier) => {
+    if (curier.areRutaCompatibila) return '#28a745'; // verde - are rută
+    return '#ffc107'; // galben - nu are rută
   };
 
-  const getStatusLabel = (status: string | undefined) => {
-    switch (status) {
-      case 'disponibil': return 'Disponibil';
-      case 'ocupat': return 'Ocupat';
-      case 'offline': return 'Offline';
-      default: return 'Necunoscut';
-    }
+  const getStatusLabel = (curier: Curier) => {
+    if (curier.areRutaCompatibila) return 'Are rută';
+    return 'Fără rută directă';
   };
 
   return (
@@ -140,6 +162,12 @@ export default function AssignCourierDialog({
                 {colet.adresaDestinatar.oras}, {colet.adresaDestinatar.judet}
               </span>
             </div>
+            <div className="info-item" style={{ marginTop: '0.5rem' }}>
+              <span className="info-label">✅ Curieri disponibili</span>
+              <span className="info-value">
+                {curieriCompatibili} din {curieriTotal} au rută către {colet.adresaDestinatar.oras}
+              </span>
+            </div>
           </div>
         )}
 
@@ -154,28 +182,17 @@ export default function AssignCourierDialog({
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
-
-          <div className="filter-selects">
-            <select 
-              value={filterZona}
-              onChange={e => setFilterZona(e.target.value)}
-            >
-              <option value="">Toate zonele</option>
-              {zone.map(z => (
-                <option key={z} value={z}>{z}</option>
-              ))}
-            </select>
-
-            <select
-              value={filterStatus}
-              onChange={e => setFilterStatus(e.target.value)}
-            >
-              <option value="">Toate statusurile</option>
-              <option value="disponibil">Disponibil</option>
-              <option value="ocupat">Ocupat</option>
-              <option value="offline">Offline</option>
-            </select>
-          </div>
+          
+          {destinatieOras && (
+            <label className="filter-checkbox">
+              <input
+                type="checkbox"
+                checked={showOnlyCompatible}
+                onChange={e => setShowOnlyCompatible(e.target.checked)}
+              />
+              <span>Afișează doar curierii cu rută către {destinatieOras}</span>
+            </label>
+          )}
         </div>
 
         {/* Curieri List */}
@@ -188,36 +205,55 @@ export default function AssignCourierDialog({
           ) : filteredCurieri.length === 0 ? (
             <div className="empty-state">
               <span className="empty-icon">🔍</span>
-              <p>Nu s-au găsit curieri</p>
+              <p>Nu s-au găsit curieri {showOnlyCompatible && destinatieOras ? `cu rută către ${destinatieOras}` : ''}</p>
+              {showOnlyCompatible && destinatieOras && (
+                <button 
+                  className="btn btn-link" 
+                  onClick={() => setShowOnlyCompatible(false)}
+                >
+                  Afișează toți curierii
+                </button>
+              )}
             </div>
           ) : (
             filteredCurieri.map(curier => (
               <div 
-                key={curier.idUtilizator}
-                className={`curier-card ${selectedCurier === curier.idUtilizator ? 'selected' : ''} ${curier.status === 'offline' ? 'offline' : ''}`}
-                onClick={() => curier.status !== 'offline' && setSelectedCurier(curier.idUtilizator)}
+                key={curier.id}
+                className={`curier-card ${selectedCurier === curier.id ? 'selected' : ''} ${curier.status === 'offline' ? 'offline' : ''}`}
+                onClick={() => curier.status !== 'offline' && setSelectedCurier(curier.id)}
               >
-                <div className="curier-avatar">
+                <div className="curier-avatar" style={{
+                  background: curier.areRutaCompatibila 
+                    ? 'linear-gradient(135deg, #10B981, #059669)' 
+                    : 'linear-gradient(135deg, #6366F1, #8B5CF6)'
+                }}>
                   {curier.nume?.charAt(0)}{curier.prenume?.charAt(0)}
                 </div>
                 
                 <div className="curier-info">
                   <div className="curier-name">
                     {curier.nume} {curier.prenume}
-                    <span 
-                      className="status-dot"
-                      style={{ backgroundColor: getStatusColor(curier.status) }}
-                      title={getStatusLabel(curier.status)}
-                    ></span>
+                    {curier.areRutaCompatibila && (
+                      <span className="ruta-badge">✓ Are rută</span>
+                    )}
                   </div>
                   <div className="curier-details">
                     <span className="detail-item">
                       📞 {curier.telefon || 'N/A'}
                     </span>
-                    <span className="detail-item">
-                      📍 {curier.zonaCurent || 'N/A'}
-                    </span>
                   </div>
+                  {curier.rute && curier.rute.length > 0 && (
+                    <div className="curier-rute">
+                      {curier.rute.slice(0, 3).map((ruta, idx) => (
+                        <span key={idx} className="ruta-tag">
+                          {ruta.origine} → {ruta.destinatie}
+                        </span>
+                      ))}
+                      {curier.rute.length > 3 && (
+                        <span className="ruta-tag more">+{curier.rute.length - 3}</span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="curier-stats">
@@ -228,7 +264,7 @@ export default function AssignCourierDialog({
                 </div>
 
                 <div className="curier-select-indicator">
-                  {selectedCurier === curier.idUtilizator && (
+                  {selectedCurier === curier.id && (
                     <span className="check-icon">✓</span>
                   )}
                 </div>

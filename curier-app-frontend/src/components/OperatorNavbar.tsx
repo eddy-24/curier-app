@@ -22,7 +22,7 @@ export default function OperatorNavbar() {
   return (
     <nav className="operator-navbar">
       <div className="navbar-brand">
-        <a href="/operator/dashboard">🚚 Curier App <span className="badge-operator">Operator</span></a>
+        <a href="/operator/dashboard"><img src="/beak-logo.png" alt="BEAK" className="navbar-logo" /> BEAK <span className="badge-operator">Operator</span></a>
       </div>
 
       <div className="navbar-menu">

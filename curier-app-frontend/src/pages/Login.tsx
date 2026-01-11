@@ -71,7 +71,8 @@ const Login = () => {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h1>🚚 Curier App</h1>
+        <img src="/beak-logo.png" alt="BEAK Logo" className="login-logo" />
+        <h1>BEAK</h1>
         <h2>Login</h2>
         
         <form onSubmit={handleSubmit}>

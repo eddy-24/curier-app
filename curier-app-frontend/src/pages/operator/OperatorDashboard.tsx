@@ -122,7 +122,7 @@ export default function OperatorDashboard() {
       </section>
 
       {/* Quick Actions */}
-      <section className="quick-actions">
+      <section className="stats-section">
         <h2>Acțiuni rapide</h2>
         <div className="actions-grid">
           <a href="/operator/comenzi" className="action-card">

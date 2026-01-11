@@ -23,6 +23,12 @@
   letter-spacing: -0.01em;
 }
 
+.navbar-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
 .navbar-menu {
   display: flex;
   gap: 0.25rem;

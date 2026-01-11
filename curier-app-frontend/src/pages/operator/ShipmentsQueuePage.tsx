@@ -22,8 +22,12 @@ interface Colet {
   dataCreare: string;
   adresaExpeditor: Adresa | null;
   adresaDestinatar: Adresa | null;
-  curierId?: number;
-  curierNume?: string;
+  curier?: {
+    idUtilizator: number;
+    nume: string;
+    prenume: string;
+    telefon?: string;
+  } | null;
 }
 
 interface Filters {
@@ -85,6 +89,91 @@ export default function ShipmentsQueuePage() {
   });
 
   const [orase, setOrase] = useState<string[]>([]);
+
+  // Funcție pentru printare AWB cu QR Code
+  const printAWB = (colet: Colet) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const trackingUrl = `https://beak.ro/tracking/${colet.codAwb}`;
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(trackingUrl)}`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>AWB ${colet.codAwb}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: Arial, sans-serif; padding: 20px; max-width: 400px; margin: 0 auto; }
+          .awb-label { border: 3px solid #000; padding: 15px; }
+          .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
+          .header-left { text-align: left; }
+          .logo { font-size: 24px; font-weight: bold; }
+          .awb-code { font-size: 22px; font-weight: bold; font-family: monospace; letter-spacing: 2px; margin-top: 5px; }
+          .qr-code { width: 100px; height: 100px; }
+          .section { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #999; }
+          .section-title { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #666; margin-bottom: 5px; }
+          .section-content { font-size: 14px; }
+          .row { display: flex; justify-content: space-between; gap: 10px; }
+          .col { flex: 1; }
+          .weight { font-size: 18px; font-weight: bold; text-align: center; padding: 8px; background: #f0f0f0; margin-top: 10px; border-radius: 4px; }
+          .scan-info { text-align: center; font-size: 10px; color: #666; margin-top: 10px; }
+          @media print { body { padding: 0; } }
+        </style>
+      </head>
+      <body>
+        <div class="awb-label">
+          <div class="header">
+            <div class="header-left">
+              <div class="logo">🐦 BEAK</div>
+              <div class="awb-code">${colet.codAwb}</div>
+            </div>
+            <img src="${qrCodeUrl}" class="qr-code" alt="QR Code" />
+          </div>
+          <div class="section">
+            <div class="section-title">📤 Expeditor</div>
+            <div class="section-content">
+              ${colet.adresaExpeditor?.strada || ''} ${colet.adresaExpeditor?.numar || ''}<br>
+              ${colet.adresaExpeditor?.oras || ''}
+            </div>
+          </div>
+          <div class="section">
+            <div class="section-title">📥 Destinatar</div>
+            <div class="section-content">
+              ${colet.adresaDestinatar?.strada || ''} ${colet.adresaDestinatar?.numar || ''}<br>
+              ${colet.adresaDestinatar?.oras || ''}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <div class="section-title">Greutate</div>
+              <div class="weight">${colet.greutateKg} kg</div>
+            </div>
+            <div class="col">
+              <div class="section-title">Serviciu</div>
+              <div class="weight">${colet.tipServiciu?.toUpperCase() || 'STANDARD'}</div>
+            </div>
+          </div>
+          ${colet.ramburs > 0 ? `
+          <div class="weight" style="background: #ffeb3b; margin-top: 10px;">
+            💰 RAMBURS: ${colet.ramburs} RON
+          </div>
+          ` : ''}
+          <div class="scan-info">Scanează codul QR pentru tracking în timp real</div>
+        </div>
+        <script>
+          window.onload = function() {
+            setTimeout(function() { window.print(); window.onafterprint = function() { window.close(); } }, 500);
+          }
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+  };
 
   useEffect(() => {
     fetchColete();
@@ -247,7 +336,18 @@ export default function ShipmentsQueuePage() {
       });
 
       if (response.ok) {
-        fetchColete();
+        const result = await response.json();
+        // Actualizează local în loc de fetch complet pentru a păstra poziția
+        setColete(prev => prev.map(colet => {
+          if (coleteToAssign.includes(colet.idColet)) {
+            return {
+              ...colet,
+              statusColet: 'preluat',
+              curier: result.curier
+            };
+          }
+          return colet;
+        }));
         setSelectedColete([]);
         setShowAssignDialog(false);
         setColetForAssign(null);
@@ -511,9 +611,9 @@ export default function ShipmentsQueuePage() {
                   </td>
                   <td className="date-cell">{formatDate(colet.dataCreare)}</td>
                   <td>
-                    {colet.curierNume ? (
+                    {colet.curier ? (
                       <span className="curier-assigned">
-                        🚚 {colet.curierNume}
+                        🚚 {colet.curier.prenume} {colet.curier.nume}
                       </span>
                     ) : (
                       <span className="curier-none">Neasignat</span>
@@ -521,6 +621,13 @@ export default function ShipmentsQueuePage() {
                   </td>
                   <td className="actions-cell">
                     <div className="action-buttons">
+                      <button 
+                        className="btn-icon btn-print"
+                        onClick={(e) => { e.stopPropagation(); printAWB(colet); }}
+                        title="Printează AWB"
+                      >
+                        🖨️
+                      </button>
                       <button 
                         className="btn-icon btn-assign"
                         onClick={() => handleAssignSingle(colet)}
@@ -532,6 +639,7 @@ export default function ShipmentsQueuePage() {
                         className="status-select"
                         value={colet.statusColet}
                         onChange={e => handleStatusChange(colet.idColet, e.target.value)}
+                        onClick={e => e.stopPropagation()}
                       >
                         {STATUS_OPTIONS.filter(s => s.value).map(opt => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>

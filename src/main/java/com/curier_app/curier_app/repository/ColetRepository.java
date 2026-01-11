@@ -29,5 +29,11 @@ public interface ColetRepository extends JpaRepository<Colet, Long> {
     @Query(value = "SELECT * FROM colet WHERE id_comanda = :idComanda", nativeQuery = true)
     List<Colet> findByComanda(@Param("idComanda") Long idComanda);
 
+    @Query(value = "SELECT * FROM colet WHERE id_curier = :curierId", nativeQuery = true)
+    List<Colet> findByCurier_IdUtilizator(@Param("curierId") Long curierId);
+
+    @Query(value = "SELECT * FROM colet WHERE id_curier IS NULL", nativeQuery = true)
+    List<Colet> findColeteNeasignate();
+
     // INSERT, UPDATE, DELETE - automat de Spring (save(), delete())
 }

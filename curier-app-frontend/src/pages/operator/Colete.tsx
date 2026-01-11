@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import './Colete.css';
 
 interface Colet {
@@ -34,10 +35,12 @@ interface Curier {
 }
 
 export default function Colete() {
+  const [searchParams] = useSearchParams();
   const [colete, setColete] = useState<Colet[]>([]);
   const [curieri, setCurieri] = useState<Curier[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('toate');
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [selectedColet, setSelectedColet] = useState<Colet | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [showAsignareModal, setShowAsignareModal] = useState(false);
@@ -46,6 +49,13 @@ export default function Colete() {
     fetchColete();
     fetchCurieri();
   }, [filter]);
+
+  useEffect(() => {
+    const search = searchParams.get('search');
+    if (search) {
+      setSearchTerm(search);
+    }
+  }, [searchParams]);
 
   const fetchColete = async () => {
     try {
@@ -75,6 +85,164 @@ export default function Colete() {
     } catch (error) {
       console.error('Eroare:', error);
     }
+  };
+
+  const printAWB = (colet: Colet) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    // URL pentru tracking - poți schimba cu domeniul tău real
+    const trackingUrl = `https://beak.ro/tracking/${colet.codAwb}`;
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(trackingUrl)}`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>AWB ${colet.codAwb}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px;
+            max-width: 400px;
+            margin: 0 auto;
+          }
+          .awb-label {
+            border: 3px solid #000;
+            padding: 15px;
+          }
+          .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+          }
+          .header-left {
+            text-align: left;
+          }
+          .logo {
+            font-size: 24px;
+            font-weight: bold;
+          }
+          .awb-code {
+            font-size: 22px;
+            font-weight: bold;
+            font-family: monospace;
+            letter-spacing: 2px;
+            margin-top: 5px;
+          }
+          .qr-code {
+            width: 100px;
+            height: 100px;
+          }
+          .section {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #999;
+          }
+          .section-title {
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 5px;
+          }
+          .section-content {
+            font-size: 14px;
+          }
+          .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+          }
+          .col {
+            flex: 1;
+          }
+          .weight {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            padding: 8px;
+            background: #f0f0f0;
+            margin-top: 10px;
+            border-radius: 4px;
+          }
+          .scan-info {
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            margin-top: 10px;
+          }
+          @media print {
+            body { padding: 0; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="awb-label">
+          <div class="header">
+            <div class="header-left">
+              <div class="logo">🐦 BEAK</div>
+              <div class="awb-code">${colet.codAwb}</div>
+            </div>
+            <img src="${qrCodeUrl}" class="qr-code" alt="QR Code" />
+          </div>
+          
+          <div class="section">
+            <div class="section-title">📤 Expeditor</div>
+            <div class="section-content">
+              ${colet.adresaExpeditor?.strada || ''} ${colet.adresaExpeditor?.numar || ''}<br>
+              ${colet.adresaExpeditor?.oras || ''}
+            </div>
+          </div>
+          
+          <div class="section">
+            <div class="section-title">📥 Destinatar</div>
+            <div class="section-content">
+              ${colet.adresaDestinatar?.strada || ''} ${colet.adresaDestinatar?.numar || ''}<br>
+              ${colet.adresaDestinatar?.oras || ''}
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col">
+              <div class="section-title">Greutate</div>
+              <div class="weight">${colet.greutateKg} kg</div>
+            </div>
+            <div class="col">
+              <div class="section-title">Serviciu</div>
+              <div class="weight">${colet.tipServiciu?.toUpperCase() || 'STANDARD'}</div>
+            </div>
+          </div>
+          
+          ${colet.ramburs ? `
+          <div class="weight" style="background: #ffeb3b; margin-top: 10px;">
+            💰 RAMBURS: ${colet.ramburs} RON
+          </div>
+          ` : ''}
+          
+          <div class="scan-info">
+            Scanează codul QR pentru tracking în timp real
+          </div>
+        </div>
+        
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+              window.onafterprint = function() { window.close(); }
+            }, 500);
+          }
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
   };
 
   const handleStatusChange = async (coletId: number, newStatus: string) => {
@@ -175,12 +343,31 @@ export default function Colete() {
     return <div className="loading">Se încarcă...</div>;
   }
 
+  // Filtrare colete după search term
+  const filteredColete = colete.filter(colet => 
+    searchTerm === '' || colet.codAwb.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="colete-page">
       <header className="page-header">
         <h1>Gestionare Colete</h1>
-        <p className="subtitle">Total: {colete.length} colete</p>
+        <p className="subtitle">Total: {filteredColete.length} colete {searchTerm && `(căutare: "${searchTerm}")`}</p>
       </header>
+
+      {/* Search */}
+      <div className="search-box">
+        <input
+          type="text"
+          placeholder="Caută după AWB..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
+        />
+        {searchTerm && (
+          <button className="clear-search" onClick={() => setSearchTerm('')}>✕</button>
+        )}
+      </div>
 
       {/* Filters */}
       <div className="filters">
@@ -196,13 +383,13 @@ export default function Colete() {
       </div>
 
       {/* Colete Grid */}
-      {colete.length === 0 ? (
+      {filteredColete.length === 0 ? (
         <div className="empty-state">
-          <p>Nu există colete {filter !== 'toate' ? `cu statusul "${getStatusLabel(filter)}"` : ''}.</p>
+          <p>Nu există colete {searchTerm ? `cu AWB "${searchTerm}"` : (filter !== 'toate' ? `cu statusul "${getStatusLabel(filter)}"` : '')}.</p>
         </div>
       ) : (
         <div className="colete-grid">
-          {colete.map((colet) => (
+          {filteredColete.map((colet) => (
             <div key={colet.idColet} className="colet-card" onClick={() => openDetails(colet)}>
               <div className="colet-header">
                 <span className="colet-awb">{colet.codAwb}</span>
@@ -301,9 +488,9 @@ export default function Colete() {
                 <button className="btn-action primary" onClick={openAsignare}>
                   👷 Asignează curier
                 </button>
-                <a href={`/operator/colete/${selectedColet.idColet}/awb`} className="btn-action">
-                  📄 Generează AWB
-                </a>
+                <button className="btn-action" onClick={() => printAWB(selectedColet)}>
+                  🖨️ Printează AWB
+                </button>
                 <button className="btn-action warning" onClick={() => handleRaportIncident('incident')}>
                   ⚠️ Raportează incident
                 </button>

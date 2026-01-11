@@ -23,6 +23,50 @@
   color: #94A3B8;
 }
 
+/* Search Box */
+.search-box {
+  position: relative;
+  margin-bottom: 1rem;
+  max-width: 400px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  padding-right: 2.5rem;
+  background: #1E293B;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  color: #F8FAFC;
+  font-size: 0.9rem;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #6366F1;
+}
+
+.search-input::placeholder {
+  color: #64748B;
+}
+
+.clear-search {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem;
+}
+
+.clear-search:hover {
+  color: #F8FAFC;
+}
+
 /* Status Filter Tabs */
 .status-tabs,
 .filters {
@@ -612,6 +656,129 @@
 
 .empty-state p {
   color: #94A3B8;
+}
+
+/* Status Buttons - Schimbă Status */
+.status-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.status-btn {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #374151;
+  border: 2px solid #4B5563;
+  color: #F8FAFC;
+}
+
+.status-btn:hover:not(:disabled) {
+  background: #4B5563;
+  border-color: #6B7280;
+}
+
+.status-btn.current {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: #6366F1;
+  color: #818CF8;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.status-btn:disabled {
+  cursor: not-allowed;
+}
+
+/* Action Section */
+.action-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+/* Modal Subtitle */
+.modal-subtitle {
+  color: #94A3B8;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Curieri List - Asignare Modal */
+.curieri-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.curier-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.curier-item:hover {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.curier-avatar {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #6366F1, #8B5CF6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.curier-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.curier-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #F8FAFC;
+}
+
+.curier-contact {
+  font-size: 0.85rem;
+  color: #94A3B8;
+}
+
+.btn-select {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #10B981, #059669);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-select:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: scale(1.02);
 }
 
 /* Responsive */

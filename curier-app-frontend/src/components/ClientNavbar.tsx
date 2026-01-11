@@ -22,7 +22,7 @@ export default function ClientNavbar() {
   return (
     <nav className="client-navbar">
       <div className="navbar-brand">
-        <a href="/client/dashboard">🚚 Curier App</a>
+        <a href="/client/dashboard"><img src="/beak-logo.png" alt="BEAK" className="navbar-logo" /> BEAK</a>
       </div>
 
       <div className="navbar-menu">

@@ -463,6 +463,78 @@
   cursor: pointer;
 }
 
+/* Actions Cell */
+.actions-cell {
+  min-width: 180px;
+}
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.btn-icon.btn-assign {
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  color: white;
+}
+
+.btn-icon.btn-assign:hover {
+  background: linear-gradient(135deg, #FBBF24, #F59E0B);
+  transform: scale(1.05);
+}
+
+.btn-icon.btn-print {
+  background: linear-gradient(135deg, #6366F1, #4F46E5);
+  color: white;
+}
+
+.btn-icon.btn-print:hover {
+  background: linear-gradient(135deg, #818CF8, #6366F1);
+  transform: scale(1.05);
+}
+
+.status-select {
+  padding: 0.5rem 0.75rem;
+  background: #1E293B;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  color: #E2E8F0;
+  font-size: 0.8rem;
+  cursor: pointer;
+  min-width: 110px;
+  transition: all 0.2s ease;
+}
+
+.status-select:hover {
+  border-color: #6366F1;
+}
+
+.status-select:focus {
+  outline: none;
+  border-color: #6366F1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.status-select option {
+  background: #1E293B;
+  color: #E2E8F0;
+  padding: 0.5rem;
+}
+
 /* Loading */
 .loading-spinner {
   display: flex;

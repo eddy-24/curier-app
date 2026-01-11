@@ -35,6 +35,9 @@ public class OperatorController {
     @Autowired
     private AdresaRepository adresaRepository;
 
+    @Autowired
+    private RutaCurierRepository rutaCurierRepository;
+
     // ==================== DASHBOARD ====================
 
     @GetMapping("/dashboard")
@@ -142,15 +145,26 @@ public class OperatorController {
     // ==================== COLETE ====================
 
     @GetMapping("/colete")
-    public ResponseEntity<?> getColete(@RequestParam(required = false) String status) {
+    public ResponseEntity<?> getColete(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) Long curierId) {
         List<Colet> colete;
 
-        if (status != null && !status.isEmpty() && !status.equals("toate")) {
+        if (curierId != null) {
+            // Filtrare după curier
+            colete = coletRepository.findByCurier_IdUtilizator(curierId);
+        } else if (status != null && !status.isEmpty() && !status.equals("toate")) {
             colete = coletRepository.findByStatus(status);
         } else {
             colete = coletRepository.findAllColete();
         }
 
+        return ResponseEntity.ok(colete);
+    }
+
+    @GetMapping("/colete/neasignate")
+    public ResponseEntity<?> getColeteNeasignate() {
+        List<Colet> colete = coletRepository.findColeteNeasignate();
         return ResponseEntity.ok(colete);
     }
 
@@ -196,10 +210,25 @@ public class OperatorController {
     // ==================== ASIGNARE CURIER ====================
 
     @GetMapping("/curieri")
-    public ResponseEntity<?> getCurieri() {
-        List<Utilizator> curieri = utilizatorRepository.findByRol("curier");
+    public ResponseEntity<?> getCurieri(
+            @RequestParam(required = false) String orasDestinatie,
+            @RequestParam(required = false) String judetDestinatie) {
         
-        // Returnăm doar datele necesare (fără parolă)
+        List<Utilizator> curieri;
+        
+        // Dacă avem destinație, filtrăm după rute
+        if (orasDestinatie != null && !orasDestinatie.isEmpty()) {
+            curieri = rutaCurierRepository.findCurieriByDestinatie(orasDestinatie, judetDestinatie);
+            
+            // Dacă nu găsim curieri cu rută exactă, returnăm toți (fallback)
+            if (curieri.isEmpty()) {
+                curieri = utilizatorRepository.findByRol("curier");
+            }
+        } else {
+            curieri = utilizatorRepository.findByRol("curier");
+        }
+        
+        // Returnăm doar datele necesare (fără parolă) + rutele
         List<Map<String, Object>> curieriList = new ArrayList<>();
         for (Utilizator curier : curieri) {
             Map<String, Object> c = new HashMap<>();
@@ -209,10 +238,84 @@ public class OperatorController {
             c.put("prenume", curier.getPrenume());
             c.put("telefon", curier.getTelefon());
             c.put("email", curier.getEmail());
+            
+            // Adăugăm rutele curierului
+            List<RutaCurier> rute = rutaCurierRepository.findByCurier_IdUtilizator(curier.getIdUtilizator());
+            List<Map<String, String>> ruteList = new ArrayList<>();
+            for (RutaCurier ruta : rute) {
+                if (ruta.getActiva()) {
+                    Map<String, String> r = new HashMap<>();
+                    r.put("origine", ruta.getOrasOrigine());
+                    r.put("destinatie", ruta.getOrasDestinatie());
+                    ruteList.add(r);
+                }
+            }
+            c.put("rute", ruteList);
+            
+            // Verificăm dacă curierul are rută pentru destinația cerută
+            if (orasDestinatie != null && !orasDestinatie.isEmpty()) {
+                boolean areRuta = rutaCurierRepository.existsRutaForCurierAndDestinatie(
+                    curier.getIdUtilizator(), orasDestinatie, judetDestinatie
+                );
+                c.put("areRutaCompatibila", areRuta);
+            }
+            
             curieriList.add(c);
         }
 
         return ResponseEntity.ok(curieriList);
+    }
+
+    // ==================== GESTIONARE RUTE CURIERI ====================
+
+    @GetMapping("/rute")
+    public ResponseEntity<?> getAllRute() {
+        List<RutaCurier> rute = rutaCurierRepository.findByActivaTrue();
+        return ResponseEntity.ok(rute);
+    }
+
+    @GetMapping("/curieri/{curierId}/rute")
+    public ResponseEntity<?> getRuteCurier(@PathVariable Long curierId) {
+        List<RutaCurier> rute = rutaCurierRepository.findByCurier_IdUtilizator(curierId);
+        return ResponseEntity.ok(rute);
+    }
+
+    @PostMapping("/curieri/{curierId}/rute")
+    public ResponseEntity<?> addRutaCurier(
+            @PathVariable Long curierId,
+            @RequestBody Map<String, String> body) {
+        
+        Optional<Utilizator> optCurier = utilizatorRepository.findById(curierId);
+        if (optCurier.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        RutaCurier ruta = new RutaCurier();
+        ruta.setCurier(optCurier.get());
+        ruta.setOrasOrigine(body.get("orasOrigine"));
+        ruta.setOrasDestinatie(body.get("orasDestinatie"));
+        ruta.setJudetOrigine(body.get("judetOrigine"));
+        ruta.setJudetDestinatie(body.get("judetDestinatie"));
+        ruta.setDescriere(body.get("descriere"));
+        ruta.setActiva(true);
+
+        rutaCurierRepository.save(ruta);
+        return ResponseEntity.ok(ruta);
+    }
+
+    @DeleteMapping("/rute/{rutaId}")
+    public ResponseEntity<?> deleteRuta(@PathVariable Long rutaId) {
+        Optional<RutaCurier> optRuta = rutaCurierRepository.findById(rutaId);
+        if (optRuta.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        // Soft delete - doar dezactivăm
+        RutaCurier ruta = optRuta.get();
+        ruta.setActiva(false);
+        rutaCurierRepository.save(ruta);
+        
+        return ResponseEntity.ok(Map.of("message", "Ruta dezactivată"));
     }
 
     @PostMapping("/colete/{coletId}/asigneaza-curier")
@@ -279,6 +382,7 @@ public class OperatorController {
             if (optColet.isPresent()) {
                 Colet colet = optColet.get();
                 colet.setStatusColet("preluat");
+                colet.setCurier(curier); // Setăm curierul
                 coletRepository.save(colet);
 
                 // Adaugă tracking event
@@ -294,9 +398,14 @@ public class OperatorController {
             }
         }
 
+        Map<String, Object> curierData = new HashMap<>();
+        curierData.put("idUtilizator", curier.getIdUtilizator());
+        curierData.put("nume", curier.getNume());
+        curierData.put("prenume", curier.getPrenume());
+
         return ResponseEntity.ok(Map.of(
                 "message", assigned + " colete asignate cu succes",
-                "curier", curier.getPrenume() + " " + curier.getNume(),
+                "curier", curierData,
                 "count", assigned
         ));
     }

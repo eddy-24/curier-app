@@ -152,6 +152,11 @@
   text-decoration: none;
   border: 1px solid rgba(148, 163, 184, 0.08);
   transition: all 0.2s ease;
+  color: #F8FAFC;
+}
+
+.action-card span {
+  color: #F8FAFC;
 }
 
 .action-card:hover {

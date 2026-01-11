@@ -162,11 +162,8 @@ export default function Comenzi() {
                   <td>
                     <div className="action-buttons">
                       <button className="btn-view" onClick={() => openDetails(comanda)}>
-                        Detalii
+                        Gestionează
                       </button>
-                      <a href={`/operator/comenzi/${comanda.idComanda}/edit`} className="btn-edit">
-                        Editează
-                      </a>
                     </div>
                   </td>
                 </tr>
@@ -217,9 +214,9 @@ export default function Comenzi() {
                     <span className="colet-awb">{colet.codAwb}</span>
                     <span className="colet-service">{colet.tipServiciu}</span>
                     <span className={`status-badge small ${getStatusColor(colet.statusColet)}`}>
-                      {colet.statusColet}
+                      {getStatusLabel(colet.statusColet)}
                     </span>
-                    <a href={`/operator/colete/${colet.idColet}`} className="btn-link">
+                    <a href={`/operator/colete?search=${colet.codAwb}`} className="btn-link">
                       Vezi
                     </a>
                   </div>
@@ -244,9 +241,6 @@ export default function Comenzi() {
             </div>
 
             <div className="modal-footer">
-              <a href={`/operator/comenzi/${selectedComanda.idComanda}/factura`} className="btn-secondary">
-                📄 Factură
-              </a>
               <button className="btn-primary" onClick={() => setShowModal(false)}>
                 Închide
               </button>

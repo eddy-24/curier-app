@@ -27,7 +27,8 @@ export default function AdminLayout() {
       <aside className="admin-sidebar">
         <div className="sidebar-header">
           <div className="logo">
-            <span className="logo-text">CurierApp</span>
+            <img src="/beak-logo.png" alt="BEAK" className="sidebar-logo" />
+            <span className="logo-text">BEAK</span>
           </div>
           <span className="admin-badge">ADMIN</span>
         </div>
