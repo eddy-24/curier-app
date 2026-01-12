@@ -153,11 +153,16 @@ public class AdminService {
         if (utilizator.getActiv() == null) {
             utilizator.setActiv(true);
         }
+        // Salvăm parola în clar pentru afișare
+        String parolaClar = utilizator.getParola();
         // Criptează parola
         if (utilizator.getParola() != null && !utilizator.getParola().isEmpty()) {
             utilizator.setParola(passwordEncoder.encode(utilizator.getParola()));
         }
-        return utilizatorRepository.save(utilizator);
+        Utilizator saved = utilizatorRepository.save(utilizator);
+        // Setăm parola în clar pentru răspuns (nu se salvează în DB)
+        saved.setParolaClar(parolaClar);
+        return saved;
     }
 
     public Utilizator updateUtilizator(Long id, Utilizator utilizatorActualizat) {
@@ -165,6 +170,9 @@ public class AdminService {
                 .map(utilizator -> {
                     if (utilizatorActualizat.getNume() != null) {
                         utilizator.setNume(utilizatorActualizat.getNume());
+                    }
+                    if (utilizatorActualizat.getPrenume() != null) {
+                        utilizator.setPrenume(utilizatorActualizat.getPrenume());
                     }
                     if (utilizatorActualizat.getEmail() != null) {
                         utilizator.setEmail(utilizatorActualizat.getEmail());
@@ -179,10 +187,17 @@ public class AdminService {
                         utilizator.setActiv(utilizatorActualizat.getActiv());
                     }
                     // Parola se actualizează doar dacă e specificată și se criptează
+                    String parolaClar = null;
                     if (utilizatorActualizat.getParola() != null && !utilizatorActualizat.getParola().isEmpty()) {
+                        parolaClar = utilizatorActualizat.getParola();
                         utilizator.setParola(passwordEncoder.encode(utilizatorActualizat.getParola()));
                     }
-                    return utilizatorRepository.save(utilizator);
+                    Utilizator saved = utilizatorRepository.save(utilizator);
+                    // Setăm parola în clar pentru răspuns (dacă a fost actualizată)
+                    if (parolaClar != null) {
+                        saved.setParolaClar(parolaClar);
+                    }
+                    return saved;
                 })
                 .orElseThrow(() -> new RuntimeException("Utilizator negăsit cu id: " + id));
     }

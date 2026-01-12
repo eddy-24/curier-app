@@ -831,6 +831,175 @@ select.form-control {
   max-height: 90vh;
   overflow-y: auto;
   border: 1px solid rgba(148, 163, 184, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content.modal-large {
+  max-width: 650px;
+}
+
+.modal-content.modal-small {
+  max-width: 450px;
+}
+
+/* Form Grid for Modal */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  padding: 1.5rem;
+}
+
+.form-grid .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-grid .form-group:last-child {
+  grid-column: span 2;
+  padding-top: 0.5rem;
+}
+
+.form-grid .form-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #94A3B8;
+}
+
+.form-grid .form-group input[type="text"],
+.form-grid .form-group input[type="email"],
+.form-grid .form-group input[type="tel"],
+.form-grid .form-group input[type="password"],
+.form-grid .form-group select {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #0F172A;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 10px;
+  color: #F8FAFC;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-grid .form-group input:focus,
+.form-grid .form-group select:focus {
+  outline: none;
+  border-color: #7C3AED;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+
+.form-grid .form-group input::placeholder {
+  color: #64748B;
+}
+
+.form-grid .form-group input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.form-grid .form-group select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2394A3B8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+.form-grid .form-group select option {
+  background: #1E293B;
+  color: #F8FAFC;
+  padding: 0.5rem;
+}
+
+/* Checkbox Label in Modal */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 10px;
+  color: #E2E8F0;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.checkbox-label:hover {
+  background: rgba(15, 23, 42, 0.8);
+  border-color: rgba(148, 163, 184, 0.25);
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #7C3AED;
+  cursor: pointer;
+}
+
+.checkbox-label .checkmark {
+  display: none;
+}
+
+/* Modal Close Button */
+.modal-close {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  color: #94A3B8;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #F87171;
+}
+
+/* Modal Button Styles */
+.btn-cancel {
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #94A3B8;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background: rgba(148, 163, 184, 0.1);
+  color: #E2E8F0;
+}
+
+/* Responsive Modal */
+@media (max-width: 640px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-grid .form-group:last-child {
+    grid-column: span 1;
+  }
+  
+  .modal-content.modal-large {
+    max-width: 95%;
+  }
 }
 
 .modal-header {

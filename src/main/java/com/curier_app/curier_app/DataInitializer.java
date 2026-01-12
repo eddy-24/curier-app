@@ -34,7 +34,32 @@ public class DataInitializer {
         return args -> {
             // Verificăm dacă există deja date
             if (utilizatorRepo.count() > 0) {
-                System.out.println("Baza de date are deja date, nu populăm din nou.");
+                System.out.println("Baza de date are deja date. Actualizez parolele...");
+                
+                // Actualizăm parolele pentru toți utilizatorii existenți
+                utilizatorRepo.findAll().forEach(user -> {
+                    String parolaNoua;
+                    switch (user.getRol()) {
+                        case "admin":
+                            parolaNoua = "admin123";
+                            break;
+                        case "operator":
+                            parolaNoua = "operator123";
+                            break;
+                        case "curier":
+                            parolaNoua = "curier123";
+                            break;
+                        default:
+                            parolaNoua = "client123";
+                    }
+                    user.setParola(passwordEncoder.encode(parolaNoua));
+                    utilizatorRepo.save(user);
+                });
+                System.out.println("✓ Parole actualizate pentru toti utilizatorii!");
+                System.out.println("  - admin: admin123");
+                System.out.println("  - operator: operator123");
+                System.out.println("  - curier: curier123");
+                System.out.println("  - client: client123");
                 return;
             }
 

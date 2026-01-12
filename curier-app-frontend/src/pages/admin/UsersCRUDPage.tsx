@@ -5,6 +5,7 @@ interface Utilizator {
   idUtilizator?: number;
   username: string;
   parola?: string;
+  parolaClar?: string; // Parola în clar pentru afișare
   nume: string;
   prenume: string;
   email: string;
@@ -17,7 +18,6 @@ const ROLURI = [
   { value: 'client', label: 'Client', icon: '👤', color: '#3498db' },
   { value: 'operator', label: 'Operator', icon: '📋', color: '#9b59b6' },
   { value: 'curier', label: 'Curier', icon: '🚚', color: '#27ae60' },
-  { value: 'sofer', label: 'Șofer', icon: '🚛', color: '#f39c12' },
   { value: 'admin', label: 'Admin', icon: '⚙️', color: '#e74c3c' },
 ];
 
@@ -338,6 +338,7 @@ export default function UsersCRUDPage() {
               </th>
               <th>Email</th>
               <th>Telefon</th>
+              <th>Parolă</th>
               <th className="sortable" onClick={() => handleSort('rol')}>
                 Rol {sortConfig.key === 'rol' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
               </th>
@@ -348,7 +349,7 @@ export default function UsersCRUDPage() {
           <tbody>
             {filteredAndSortedUsers.length === 0 ? (
               <tr>
-                <td colSpan={7} className="no-data">
+                <td colSpan={8} className="no-data">
                   <div className="empty-state">
                     <span className="empty-icon">👥</span>
                     <p>Nu există utilizatori care să corespundă filtrelor</p>
@@ -358,6 +359,19 @@ export default function UsersCRUDPage() {
             ) : (
               filteredAndSortedUsers.map(user => {
                 const rolInfo = getRolInfo(user.rol);
+                // Parolele default pentru fiecare rol
+                const getDefaultPassword = (rol: string) => {
+                  switch(rol) {
+                    case 'client': return 'client123';
+                    case 'curier': return 'curier123';
+                    case 'operator': return 'operator123';
+                    case 'admin': return 'admin123';
+                    case 'sofer': return 'sofer123';
+                    default: return 'pass123';
+                  }
+                };
+                // Afișăm parolaClar dacă există, altfel parola default
+                const displayPassword = user.parolaClar || getDefaultPassword(user.rol);
                 return (
                   <tr key={user.idUtilizator} className={!user.activ ? 'inactive-row' : ''}>
                     <td>
@@ -376,6 +390,19 @@ export default function UsersCRUDPage() {
                     </td>
                     <td>{user.email || '-'}</td>
                     <td>{user.telefon || '-'}</td>
+                    <td>
+                      <code style={{ 
+                        background: '#f0f0f0', 
+                        padding: '4px 8px', 
+                        borderRadius: '4px',
+                        fontFamily: 'monospace',
+                        fontSize: '13px',
+                        color: '#e74c3c',
+                        fontWeight: 'bold'
+                      }}>
+                        {displayPassword}
+                      </code>
+                    </td>
                     <td>
                       <button 
                         className="role-badge-btn"

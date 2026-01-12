@@ -49,9 +49,6 @@ const Login = () => {
           case 'curier':
             navigate('/curier/dashboard');
             break;
-          case 'sofer':
-            navigate('/curier/dashboard');
-            break;
           case 'admin':
             navigate('/admin/dashboard');
             break;

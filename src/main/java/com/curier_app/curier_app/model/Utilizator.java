@@ -42,4 +42,8 @@ public class Utilizator {
 
     @Column(nullable = false)
     private Boolean activ = true;
+
+    // Câmp transient pentru afișarea parolei în clar (nu se salvează în DB)
+    @Transient
+    private String parolaClar;
 }

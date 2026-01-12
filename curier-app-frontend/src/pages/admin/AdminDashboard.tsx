@@ -7,7 +7,6 @@ interface DashboardStats {
   utilizatoriPeRoluri: {
     client?: number;
     curier?: number;
-    sofer?: number;
     operator?: number;
     admin?: number;
   };
@@ -107,13 +106,6 @@ export default function AdminDashboard() {
           <div className="stat-info">
             <span className="stat-value">{stats?.utilizatoriPeRoluri?.curier || 0}</span>
             <span className="stat-label">Curieri</span>
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon purple">🚛</div>
-          <div className="stat-info">
-            <span className="stat-value">{stats?.utilizatoriPeRoluri?.sofer || 0}</span>
-            <span className="stat-label">Șoferi</span>
           </div>
         </div>
       </div>
