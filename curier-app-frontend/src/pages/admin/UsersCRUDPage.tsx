@@ -180,7 +180,20 @@ export default function UsersCRUDPage() {
       });
 
       if (response.ok) {
-        fetchUtilizatori();
+        const updatedUser = await response.json();
+        
+        // Update optimist: actualizează lista local
+        if (editMode && selectedUser) {
+          setUtilizatori(prev => prev.map(u => 
+            u.idUtilizator === selectedUser.idUtilizator 
+              ? { ...u, ...updatedUser, parolaClar: formData.parola || u.parolaClar }
+              : u
+          ));
+        } else {
+          // Pentru utilizator nou, adaugă la listă
+          setUtilizatori(prev => [...prev, updatedUser]);
+        }
+        
         closeModal();
       } else {
         const errorText = await response.text();
@@ -223,10 +236,16 @@ export default function UsersCRUDPage() {
       });
 
       if (response.ok) {
-        fetchUtilizatori();
+        // Update optimist - elimină utilizatorul din listă
+        setUtilizatori(prev => prev.filter(u => u.idUtilizator !== id));
+        alert('Utilizator șters cu succes!');
+      } else {
+        const errorText = await response.text();
+        alert(`Nu se poate șterge utilizatorul: ${errorText || 'Utilizatorul are date asociate (comenzi, adrese, etc.)'}`);
       }
     } catch (error) {
       console.error('Eroare la ștergere:', error);
+      alert('Eroare la ștergerea utilizatorului. Verificați dacă utilizatorul nu are date asociate.');
     } finally {
       setDeleteConfirm(null);
     }
@@ -366,7 +385,6 @@ export default function UsersCRUDPage() {
                     case 'curier': return 'curier123';
                     case 'operator': return 'operator123';
                     case 'admin': return 'admin123';
-                    case 'sofer': return 'sofer123';
                     default: return 'pass123';
                   }
                 };

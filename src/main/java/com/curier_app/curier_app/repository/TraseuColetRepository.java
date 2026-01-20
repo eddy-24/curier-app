@@ -20,8 +20,8 @@ public interface TraseuColetRepository extends JpaRepository<TraseuColet, Long> 
     @Query(value = "SELECT * FROM traseu_colet WHERE id_colet = :idColet", nativeQuery = true)
     List<TraseuColet> findByColetId(@Param("idColet") Long idColet);
 
-    @Query(value = "SELECT * FROM traseu_colet WHERE id_sofer = :idSofer", nativeQuery = true)
-    List<TraseuColet> findBySoferId(@Param("idSofer") Long idSofer);
+    @Query(value = "SELECT * FROM traseu_colet WHERE id_sofer = :idCurier", nativeQuery = true)
+    List<TraseuColet> findByCurierId(@Param("idCurier") Long idCurier);
 
     @Query(value = "SELECT * FROM traseu_colet WHERE id_vehicul = :idVehicul", nativeQuery = true)
     List<TraseuColet> findByVehiculId(@Param("idVehicul") Long idVehicul);

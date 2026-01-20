@@ -29,10 +29,10 @@ public class TraseuColet {
     @JoinColumn(name = "id_vehicul", nullable = false)
     private Vehicul vehicul;
 
-    // FK către SOFER (Utilizator cu rol=sofer)
+    // FK către CURIER (Utilizator cu rol=curier)
     @ManyToOne
     @JoinColumn(name = "id_sofer", nullable = false)
-    private Utilizator sofer;
+    private Utilizator curier;
 
     @Column(name = "data_incarcare", nullable = false)
     private LocalDateTime dataIncarcare;

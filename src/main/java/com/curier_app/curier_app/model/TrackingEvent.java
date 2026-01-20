@@ -37,5 +37,5 @@ public class TrackingEvent {
 
     @ManyToOne
     @JoinColumn(name = "id_utilizator")
-    private Utilizator utilizator; // Cine a făcut update-ul (curier/sofer)
+    private Utilizator utilizator; // Cine a făcut update-ul (curier/operator)
 }

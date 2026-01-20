@@ -255,7 +255,7 @@ public class DataInitializer {
                 TraseuColet traseu = new TraseuColet();
                 traseu.setColet(colete.get(i));
                 traseu.setVehicul(vehicule.get(i));
-                traseu.setSofer(utilizatori.get(8 + i % 2)); // Soferii
+                traseu.setCurier(utilizatori.get(8 + i % 2)); // Curierii
                 traseu.setDataIncarcare(LocalDateTime.now().minusDays(i + 1));
                 if (i % 2 == 0) {
                     traseu.setDataDescarcare(LocalDateTime.now().minusDays(i));
@@ -382,7 +382,6 @@ public class DataInitializer {
             System.out.println("\nCredențiale utilizatori:");
             System.out.println("  Clienti: client1-5 / pass123");
             System.out.println("  Curieri: curier1-3 / pass123");
-            System.out.println("  Soferi: sofer1-2 / pass123");
             System.out.println("  Operatori: operator1-2 / pass123");
             System.out.println("  Admin: admin / admin123");
             System.out.println("========================================\n");

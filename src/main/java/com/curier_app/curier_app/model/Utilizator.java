@@ -38,7 +38,7 @@ public class Utilizator {
     private String email;
 
     @Column(nullable = false, length = 20)
-    private String rol; // client, curier, sofer, admin
+    private String rol; // client, curier, operator, admin
 
     @Column(nullable = false)
     private Boolean activ = true;

@@ -16,7 +16,6 @@ const ROLURI = [
   { value: 'client', label: 'Client', badge: 'badge-client' },
   { value: 'operator', label: 'Operator', badge: 'badge-operator' },
   { value: 'curier', label: 'Curier', badge: 'badge-curier' },
-  { value: 'sofer', label: 'Șofer', badge: 'badge-sofer' },
   { value: 'admin', label: 'Admin', badge: 'badge-admin' },
 ];
 
