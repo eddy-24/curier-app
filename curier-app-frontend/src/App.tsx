@@ -31,6 +31,7 @@ import RapoarteKPI from './pages/admin/RapoarteKPI';
 import Configurari from './pages/admin/Configurari';
 import ServicesCRUDPage from './pages/admin/ServicesCRUDPage';
 import UsersCRUDPage from './pages/admin/UsersCRUDPage';
+import VehiculeCRUDPage from './pages/admin/VehiculeCRUDPage';
 import './App.css';
 
 function App() {
@@ -83,6 +84,7 @@ function App() {
           <Route path="configurari" element={<Configurari />} />
           <Route path="services-crud" element={<ServicesCRUDPage />} />
           <Route path="users-crud" element={<UsersCRUDPage />} />
+          <Route path="vehicule-crud" element={<VehiculeCRUDPage />} />
         </Route>
       </Routes>
     </Router>

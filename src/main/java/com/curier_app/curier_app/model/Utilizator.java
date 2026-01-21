@@ -1,6 +1,7 @@
 package com.curier_app.curier_app.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -42,6 +43,10 @@ public class Utilizator {
 
     @Column(nullable = false)
     private Boolean activ = true;
+
+    @ManyToOne
+    @JoinColumn(name = "id_vehicul")
+    private Vehicul vehicul;
 
     // Câmp transient pentru afișarea parolei în clar (nu se salvează în DB)
     @Transient

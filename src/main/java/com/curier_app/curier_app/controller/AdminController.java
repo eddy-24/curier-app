@@ -84,6 +84,67 @@ public class AdminController {
         }
     }
 
+    @PatchMapping("/utilizatori/{idUtilizator}/asigneaza-vehicul/{idVehicul}")
+    public ResponseEntity<Utilizator> asigneazaVehicul(
+            @PathVariable Long idUtilizator,
+            @PathVariable Long idVehicul) {
+        try {
+            return ResponseEntity.ok(adminService.asigneazaVehicul(idUtilizator, idVehicul));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PatchMapping("/utilizatori/{idUtilizator}/sterge-vehicul")
+    public ResponseEntity<Utilizator> stergeVehicul(@PathVariable Long idUtilizator) {
+        try {
+            return ResponseEntity.ok(adminService.asigneazaVehicul(idUtilizator, null));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // ==================== VEHICULE ====================
+
+    @GetMapping("/vehicule")
+    public ResponseEntity<List<Vehicul>> getAllVehicule() {
+        return ResponseEntity.ok(adminService.getAllVehicule());
+    }
+
+    @GetMapping("/vehicule/disponibile")
+    public ResponseEntity<List<Vehicul>> getVehiculeDisponibile() {
+        return ResponseEntity.ok(adminService.getVehiculeDisponibile());
+    }
+
+    @GetMapping("/vehicule/{id}")
+    public ResponseEntity<Vehicul> getVehiculById(@PathVariable Long id) {
+        return adminService.getVehiculById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/vehicule")
+    public ResponseEntity<Vehicul> createVehicul(@RequestBody Vehicul vehicul) {
+        return ResponseEntity.ok(adminService.createVehicul(vehicul));
+    }
+
+    @PutMapping("/vehicule/{id}")
+    public ResponseEntity<Vehicul> updateVehicul(
+            @PathVariable Long id,
+            @RequestBody Vehicul vehicul) {
+        try {
+            return ResponseEntity.ok(adminService.updateVehicul(id, vehicul));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/vehicule/{id}")
+    public ResponseEntity<Void> deleteVehicul(@PathVariable Long id) {
+        adminService.deleteVehicul(id);
+        return ResponseEntity.noContent().build();
+    }
+
     // ==================== SERVICII ====================
 
     @GetMapping("/servicii")

@@ -10,6 +10,7 @@ export default function AdminLayout() {
   const menuItems = [
     { path: '/admin/dashboard', label: 'Dashboard' },
     { path: '/admin/users-crud', label: 'Utilizatori' },
+    { path: '/admin/vehicule-crud', label: 'Vehicule' },
     { path: '/admin/services-crud', label: 'Servicii' },
     { path: '/admin/rapoarte', label: 'Rapoarte KPI' },
     { path: '/admin/configurari', label: 'Configurări' },

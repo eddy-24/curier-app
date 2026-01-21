@@ -26,5 +26,7 @@ public interface VehiculRepository extends JpaRepository<Vehicul, Long> {
     @Query(value = "SELECT * FROM vehicul WHERE status_vehicul = :status", nativeQuery = true)
     List<Vehicul> findByStatus(@Param("status") String status);
 
+    List<Vehicul> findByStatusVehicul(String status);
+
     // INSERT, UPDATE, DELETE - automat de Spring (save(), delete())
 }

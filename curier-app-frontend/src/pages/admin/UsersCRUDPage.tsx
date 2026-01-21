@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
 import './CRUDPage.css';
 
+interface Vehicul {
+  idVehicul: number;
+  numarInmatriculare: string;
+  marca: string;
+  model: string;
+  tipVehicul: string;
+}
+
 interface Utilizator {
   idUtilizator?: number;
   username: string;
@@ -12,6 +20,7 @@ interface Utilizator {
   telefon: string;
   rol: string;
   activ: boolean;
+  vehicul?: Vehicul;
 }
 
 const ROLURI = [
@@ -34,9 +43,11 @@ const INITIAL_USER: Utilizator = {
 
 export default function UsersCRUDPage() {
   const [utilizatori, setUtilizatori] = useState<Utilizator[]>([]);
+  const [vehicule, setVehicule] = useState<Vehicul[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(false);
+  const [showVehiculModal, setShowVehiculModal] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedUser, setSelectedUser] = useState<Utilizator | null>(null);
   const [formData, setFormData] = useState<Utilizator>(INITIAL_USER);
@@ -52,6 +63,7 @@ export default function UsersCRUDPage() {
 
   useEffect(() => {
     fetchUtilizatori();
+    fetchVehicule();
   }, []);
 
   const fetchUtilizatori = async () => {
@@ -65,6 +77,38 @@ export default function UsersCRUDPage() {
       console.error('Eroare la încărcare utilizatori:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchVehicule = async () => {
+    try {
+      const response = await fetch('http://localhost:8081/api/admin/vehicule/disponibile');
+      if (response.ok) {
+        const data = await response.json();
+        setVehicule(data);
+      }
+    } catch (error) {
+      console.error('Eroare la încărcare vehicule:', error);
+    }
+  };
+
+  const handleAsigneazaVehicul = async (idVehicul: number | null) => {
+    if (!selectedUser?.idUtilizator) return;
+
+    try {
+      const url = idVehicul
+        ? `http://localhost:8081/api/admin/utilizatori/${selectedUser.idUtilizator}/asigneaza-vehicul/${idVehicul}`
+        : `http://localhost:8081/api/admin/utilizatori/${selectedUser.idUtilizator}/sterge-vehicul`;
+      
+      const response = await fetch(url, { method: 'PATCH' });
+
+      if (response.ok) {
+        await fetchUtilizatori();
+        setShowVehiculModal(false);
+        setSelectedUser(null);
+      }
+    } catch (error) {
+      console.error('Eroare la asignare vehicul:', error);
     }
   };
 
@@ -346,23 +390,24 @@ export default function UsersCRUDPage() {
 
       {/* Table */}
       <div className="table-container">
-        <table className="data-table">
+        <table className="data-table" style={{ tableLayout: 'fixed' }}>
           <thead>
             <tr>
-              <th className="sortable" onClick={() => handleSort('username')}>
+              <th className="sortable" onClick={() => handleSort('username')} style={{ width: '120px' }}>
                 Username {sortConfig.key === 'username' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
               </th>
-              <th className="sortable" onClick={() => handleSort('nume')}>
+              <th className="sortable" onClick={() => handleSort('nume')} style={{ width: '180px' }}>
                 Nume Complet {sortConfig.key === 'nume' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
               </th>
-              <th>Email</th>
-              <th>Telefon</th>
-              <th>Parolă</th>
-              <th className="sortable" onClick={() => handleSort('rol')}>
+              <th style={{ width: '200px' }}>Email</th>
+              <th style={{ width: '130px' }}>Telefon</th>
+              <th style={{ width: '120px' }}>Parolă</th>
+              <th className="sortable" onClick={() => handleSort('rol')} style={{ width: '120px' }}>
                 Rol {sortConfig.key === 'rol' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
               </th>
-              <th>Status</th>
-              <th>Acțiuni</th>
+              <th style={{ width: '180px' }}>Vehicul</th>
+              <th style={{ width: '100px' }}>Status</th>
+              <th style={{ width: '150px' }}>Acțiuni</th>
             </tr>
           </thead>
           <tbody>
@@ -406,8 +451,8 @@ export default function UsersCRUDPage() {
                     <td>
                       <strong>{user.nume} {user.prenume}</strong>
                     </td>
-                    <td>{user.email || '-'}</td>
-                    <td>{user.telefon || '-'}</td>
+                    <td style={{ wordBreak: 'break-word', fontSize: '13px' }}>{user.email || '-'}</td>
+                    <td style={{ whiteSpace: 'nowrap' }}>{user.telefon || '-'}</td>
                     <td>
                       <code style={{ 
                         background: '#f0f0f0', 
@@ -432,12 +477,26 @@ export default function UsersCRUDPage() {
                       </button>
                     </td>
                     <td>
+                      {user.rol === 'curier' ? (
+                        user.vehicul ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span>🚗 {user.vehicul.marca} {user.vehicul.model}</span>
+                            <small style={{ color: '#666' }}>({user.vehicul.numarInmatriculare})</small>
+                          </div>
+                        ) : (
+                          <span style={{ color: '#999', fontStyle: 'italic' }}>Neasignat</span>
+                        )
+                      ) : (
+                        <span style={{ color: '#ccc' }}>-</span>
+                      )}
+                    </td>
+                    <td>
                       <span className={`status-badge ${user.activ ? 'active' : 'inactive'}`}>
                         {user.activ ? '✓ Activ' : '✗ Inactiv'}
                       </span>
                     </td>
                     <td className="actions-cell">
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                         <button 
                           className="btn-action btn-edit-action" 
                           onClick={() => openEditModal(user)}
@@ -445,6 +504,19 @@ export default function UsersCRUDPage() {
                         >
                           ✏️
                         </button>
+                        {user.rol === 'curier' && (
+                          <button 
+                            className="btn-action btn-info-action"
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setShowVehiculModal(true);
+                            }}
+                            title="Asignează Vehicul"
+                            style={{ backgroundColor: '#17a2b8', color: 'white' }}
+                          >
+                            🚗
+                          </button>
+                        )}
                         <button 
                           className={`btn-action ${user.activ ? 'btn-pause-action' : 'btn-play-action'}`}
                           onClick={() => toggleActiv(user)}
@@ -662,6 +734,110 @@ export default function UsersCRUDPage() {
 
             <div className="modal-footer">
               <button className="btn btn-cancel" onClick={closeModal}>
+                Închide
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Asignare Vehicul */}
+      {showVehiculModal && selectedUser && (
+        <div className="modal-overlay" onClick={() => setShowVehiculModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>🚗 Asignează Vehicul pentru {selectedUser.nume} {selectedUser.prenume}</h3>
+              <button className="btn-close" onClick={() => setShowVehiculModal(false)}>✕</button>
+            </div>
+
+            <div className="modal-body">
+              {selectedUser.vehicul && (
+                <div style={{ 
+                  marginBottom: '24px', 
+                  padding: '16px', 
+                  backgroundColor: 'rgba(99, 102, 241, 0.1)', 
+                  borderRadius: '8px', 
+                  border: '1px solid rgba(99, 102, 241, 0.2)' 
+                }}>
+                  <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: '#E2E8F0', fontSize: '14px' }}>
+                    Vehicul curent asignat:
+                  </p>
+                  <p style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#F8FAFC' }}>
+                    🚗 {selectedUser.vehicul.marca} {selectedUser.vehicul.model} 
+                    <span style={{ color: '#94A3B8', marginLeft: '10px' }}>
+                      ({selectedUser.vehicul.numarInmatriculare})
+                    </span>
+                  </p>
+                  <button
+                    className="btn-secondary"
+                    style={{ fontSize: '14px', padding: '8px 16px' }}
+                    onClick={() => {
+                      if (window.confirm('Sigur vrei să elimini vehiculul asignat?')) {
+                        handleAsigneazaVehicul(null);
+                      }
+                    }}
+                  >
+                    🗑️ Elimină Vehicul
+                  </button>
+                </div>
+              )}
+
+              <div className="form-group">
+                <label>Selectează vehicul disponibil:</label>
+                <select 
+                  className="form-control"
+                  onChange={(e) => {
+                    const idVehicul = e.target.value ? parseInt(e.target.value) : null;
+                    if (idVehicul) {
+                      handleAsigneazaVehicul(idVehicul);
+                    }
+                  }}
+                  defaultValue=""
+                >
+                  <option value="">-- Selectează un vehicul --</option>
+                  {vehicule
+                    .filter(v => {
+                      // Filtrăm doar vehiculele active
+                      if (v.statusVehicul !== 'activ') return false;
+                      
+                      // Excludem vehiculul curent al utilizatorului selectat
+                      if (selectedUser.vehicul && v.idVehicul === selectedUser.vehicul.idVehicul) return false;
+                      
+                      // Excludem vehiculele deja asignate la alți curieri
+                      const isAsignatLaAltCurier = utilizatori.some(u => 
+                        u.idUtilizator !== selectedUser.idUtilizator && 
+                        u.vehicul && 
+                        u.vehicul.idVehicul === v.idVehicul
+                      );
+                      
+                      return !isAsignatLaAltCurier;
+                    })
+                    .map(vehicul => (
+                      <option key={vehicul.idVehicul} value={vehicul.idVehicul}>
+                        {vehicul.marca} {vehicul.model} ({vehicul.numarInmatriculare}) - {vehicul.tipVehicul}
+                      </option>
+                    ))
+                  }
+                </select>
+              </div>
+
+              {vehicule.filter(v => {
+                if (v.statusVehicul !== 'activ') return false;
+                const isAsignatLaAltCurier = utilizatori.some(u => 
+                  u.idUtilizator !== selectedUser.idUtilizator && 
+                  u.vehicul && 
+                  u.vehicul.idVehicul === v.idVehicul
+                );
+                return !isAsignatLaAltCurier;
+              }).length === 0 && (
+                <p style={{ color: '#F87171', marginTop: '12px', fontStyle: 'italic', fontSize: '14px' }}>
+                  ⚠️ Nu există vehicule disponibile. {vehicule.filter(v => v.statusVehicul === 'activ').length > 0 ? 'Toate vehiculele active sunt deja asignate.' : 'Adaugă vehicule noi din pagina de Vehicule.'}
+                </p>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-cancel" onClick={() => setShowVehiculModal(false)}>
                 Închide
               </button>
             </div>

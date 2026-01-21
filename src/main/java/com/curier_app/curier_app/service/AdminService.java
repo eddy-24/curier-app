@@ -29,6 +29,9 @@ public class AdminService {
     private ServiciuRepository serviciuRepository;
 
     @Autowired
+    private VehiculRepository vehiculRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     // ==================== DASHBOARD ====================
@@ -177,6 +180,9 @@ public class AdminService {
                     if (utilizatorActualizat.getActiv() != null) {
                         utilizator.setActiv(utilizatorActualizat.getActiv());
                     }
+                    if (utilizatorActualizat.getVehicul() != null) {
+                        utilizator.setVehicul(utilizatorActualizat.getVehicul());
+                    }
                     // Parola se actualizează doar dacă e specificată și se criptează
                     String parolaClar = null;
                     if (utilizatorActualizat.getParola() != null && !utilizatorActualizat.getParola().isEmpty()) {
@@ -191,6 +197,21 @@ public class AdminService {
                     return saved;
                 })
                 .orElseThrow(() -> new RuntimeException("Utilizator negăsit cu id: " + id));
+    }
+
+    public Utilizator asigneazaVehicul(Long idUtilizator, Long idVehicul) {
+        Utilizator utilizator = utilizatorRepository.findById(idUtilizator)
+                .orElseThrow(() -> new RuntimeException("Utilizator negăsit"));
+        
+        if (idVehicul == null) {
+            utilizator.setVehicul(null);
+        } else {
+            Vehicul vehicul = vehiculRepository.findById(idVehicul)
+                    .orElseThrow(() -> new RuntimeException("Vehicul negăsit"));
+            utilizator.setVehicul(vehicul);
+        }
+        
+        return utilizatorRepository.save(utilizator);
     }
 
     public void deleteUtilizator(Long id) {
@@ -260,10 +281,64 @@ public class AdminService {
     public Serviciu toggleActivServiciu(Long id) {
         return serviciuRepository.findById(id)
                 .map(serviciu -> {
-                    serviciu.setActiv(serviciu.getActiv() == null || !serviciu.getActiv());
+                    serviciu.setActiv(!serviciu.getActiv());
                     return serviciuRepository.save(serviciu);
                 })
                 .orElseThrow(() -> new RuntimeException("Serviciu negăsit cu id: " + id));
+    }
+
+    // ==================== VEHICULE ====================
+
+    public List<Vehicul> getAllVehicule() {
+        return vehiculRepository.findAll();
+    }
+
+    public List<Vehicul> getVehiculeDisponibile() {
+        return vehiculRepository.findByStatusVehicul("activ");
+    }
+
+    public Optional<Vehicul> getVehiculById(Long id) {
+        return vehiculRepository.findById(id);
+    }
+
+    public Vehicul createVehicul(Vehicul vehicul) {
+        if (vehicul.getStatusVehicul() == null) {
+            vehicul.setStatusVehicul("activ");
+        }
+        return vehiculRepository.save(vehicul);
+    }
+
+    public Vehicul updateVehicul(Long id, Vehicul vehiculActualizat) {
+        return vehiculRepository.findById(id)
+                .map(vehicul -> {
+                    if (vehiculActualizat.getNumarInmatriculare() != null) {
+                        vehicul.setNumarInmatriculare(vehiculActualizat.getNumarInmatriculare());
+                    }
+                    if (vehiculActualizat.getMarca() != null) {
+                        vehicul.setMarca(vehiculActualizat.getMarca());
+                    }
+                    if (vehiculActualizat.getModel() != null) {
+                        vehicul.setModel(vehiculActualizat.getModel());
+                    }
+                    if (vehiculActualizat.getTipVehicul() != null) {
+                        vehicul.setTipVehicul(vehiculActualizat.getTipVehicul());
+                    }
+                    if (vehiculActualizat.getCapacitateKg() != null) {
+                        vehicul.setCapacitateKg(vehiculActualizat.getCapacitateKg());
+                    }
+                    if (vehiculActualizat.getCapacitateVolumM3() != null) {
+                        vehicul.setCapacitateVolumM3(vehiculActualizat.getCapacitateVolumM3());
+                    }
+                    if (vehiculActualizat.getStatusVehicul() != null) {
+                        vehicul.setStatusVehicul(vehiculActualizat.getStatusVehicul());
+                    }
+                    return vehiculRepository.save(vehicul);
+                })
+                .orElseThrow(() -> new RuntimeException("Vehicul negăsit cu id: " + id));
+    }
+
+    public void deleteVehicul(Long id) {
+        vehiculRepository.deleteById(id);
     }
 
     // ==================== RAPOARTE KPI ====================
