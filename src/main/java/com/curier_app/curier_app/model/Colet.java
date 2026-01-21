@@ -33,11 +33,18 @@ public class Colet {
     @Column(name = "greutate_kg", precision = 6, scale = 2)
     private BigDecimal greutateKg;
 
-    @Column(name = "volum_m3", precision = 6, scale = 2)
-    private BigDecimal volumM3;
+    @Column(name = "lungime_cm", precision = 6, scale = 2)
+    private BigDecimal lungimeCm;
 
-    @Column(name = "tip_serviciu", length = 20)
-    private String tipServiciu;
+    @Column(name = "latime_cm", precision = 6, scale = 2)
+    private BigDecimal latimeCm;
+
+    @Column(name = "inaltime_cm", precision = 6, scale = 2)
+    private BigDecimal inaltimeCm;
+
+    @ManyToOne
+    @JoinColumn(name = "id_serviciu")
+    private Serviciu serviciu;
 
     @Column(name = "pret_declarat", precision = 8, scale = 2)
     private BigDecimal pretDeclarat;

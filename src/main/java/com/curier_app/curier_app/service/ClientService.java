@@ -42,6 +42,9 @@ public class ClientService {
     @Autowired
     private UtilizatorRepository utilizatorRepository;
 
+    @Autowired
+    private ServiciuRepository serviciuRepository;
+
     // ==================== DASHBOARD ====================
 
     /**
@@ -101,8 +104,17 @@ public class ClientService {
             colet.setComanda(comanda);
             colet.setCodAwb(generateAwb());
             colet.setGreutateKg(coletReq.getGreutateKg());
-            colet.setVolumM3(coletReq.getVolumM3());
-            colet.setTipServiciu(coletReq.getTipServiciu());
+            colet.setLungimeCm(coletReq.getLungimeCm());
+            colet.setLatimeCm(coletReq.getLatimeCm());
+            colet.setInaltimeCm(coletReq.getInaltimeCm());
+            
+            // Găsim serviciul după ID
+            if (coletReq.getIdServiciu() != null) {
+                Serviciu serviciu = serviciuRepository.findById(coletReq.getIdServiciu())
+                        .orElseThrow(() -> new RuntimeException("Serviciu negăsit"));
+                colet.setServiciu(serviciu);
+            }
+            
             colet.setPretDeclarat(coletReq.getPretDeclarat());
             colet.setStatusColet(statusInitial);
 
@@ -390,7 +402,7 @@ public class ClientService {
     private void generareFactura(Comanda comanda, List<ColetRequest> colete) {
         // Folosește costul calculat în frontend în loc de calculul backend
         BigDecimal total = colete.stream()
-                .map(c -> c.getCostCalculat() != null ? c.getCostCalculat() : calculeazaPret(c.getTipServiciu(), c.getGreutateKg()))
+                .map(c -> c.getCostCalculat() != null ? c.getCostCalculat() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         Factura factura = new Factura();
@@ -402,18 +414,6 @@ public class ClientService {
         factura.setStatusPlata("neachitat");
         
         facturaRepository.save(factura);
-    }
-
-    private BigDecimal calculeazaPret(String tipServiciu, BigDecimal greutate) {
-        BigDecimal pretBaza = switch (tipServiciu) {
-            case "express" -> new BigDecimal("25.00");
-            case "overnight" -> new BigDecimal("35.00");
-            default -> new BigDecimal("15.00"); // standard
-        };
-        
-        // Adaugă cost pe kg
-        BigDecimal costGreutate = greutate.multiply(new BigDecimal("2.00"));
-        return pretBaza.add(costGreutate);
     }
 
     // ==================== INNER CLASSES (DTOs) ====================
@@ -432,8 +432,10 @@ public class ClientService {
 
     public static class ColetRequest {
         private BigDecimal greutateKg;
-        private BigDecimal volumM3;
-        private String tipServiciu;
+        private BigDecimal lungimeCm;
+        private BigDecimal latimeCm;
+        private BigDecimal inaltimeCm;
+        private Long idServiciu;
         private BigDecimal pretDeclarat;
         private BigDecimal costCalculat; // Costul calculat în frontend
         private Long idAdresaExpeditor;
@@ -441,10 +443,14 @@ public class ClientService {
 
         public BigDecimal getGreutateKg() { return greutateKg; }
         public void setGreutateKg(BigDecimal greutateKg) { this.greutateKg = greutateKg; }
-        public BigDecimal getVolumM3() { return volumM3; }
-        public void setVolumM3(BigDecimal volumM3) { this.volumM3 = volumM3; }
-        public String getTipServiciu() { return tipServiciu; }
-        public void setTipServiciu(String tipServiciu) { this.tipServiciu = tipServiciu; }
+        public BigDecimal getLungimeCm() { return lungimeCm; }
+        public void setLungimeCm(BigDecimal lungimeCm) { this.lungimeCm = lungimeCm; }
+        public BigDecimal getLatimeCm() { return latimeCm; }
+        public void setLatimeCm(BigDecimal latimeCm) { this.latimeCm = latimeCm; }
+        public BigDecimal getInaltimeCm() { return inaltimeCm; }
+        public void setInaltimeCm(BigDecimal inaltimeCm) { this.inaltimeCm = inaltimeCm; }
+        public Long getIdServiciu() { return idServiciu; }
+        public void setIdServiciu(Long idServiciu) { this.idServiciu = idServiciu; }
         public BigDecimal getPretDeclarat() { return pretDeclarat; }
         public void setPretDeclarat(BigDecimal pretDeclarat) { this.pretDeclarat = pretDeclarat; }
         public BigDecimal getCostCalculat() { return costCalculat; }

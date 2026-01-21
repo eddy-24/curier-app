@@ -25,22 +25,13 @@ public class ClientController {
     @Autowired
     private ColetRepository coletRepository;
 
-    // ==================== DASHBOARD ====================
 
-    /**
-     * GET /api/client/{clientId}/dashboard
-     * Obține statistici pentru dashboard
-     */
     @GetMapping("/{clientId}/dashboard")
     public ResponseEntity<DashboardStats> getDashboard(@PathVariable Long clientId) {
         DashboardStats stats = clientService.getDashboardStats(clientId);
         return ResponseEntity.ok(stats);
     }
 
-    /**
-     * GET /api/client/{clientId}/expedieri/recente
-     * Obține expedierile recente (ultimele 10)
-     */
     @GetMapping("/{clientId}/expedieri/recente")
     public ResponseEntity<List<Comanda>> getExpedieriRecente(@PathVariable Long clientId) {
         List<Comanda> expedieri = clientService.getExpedieriRecente(clientId);
@@ -49,20 +40,13 @@ public class ClientController {
 
     // ==================== EXPEDIERI ====================
 
-    /**
-     * GET /api/client/{clientId}/expedieri
-     * Obține toate expedierile clientului
-     */
     @GetMapping("/{clientId}/expedieri")
     public ResponseEntity<List<Comanda>> getExpedieri(@PathVariable Long clientId) {
         List<Comanda> expedieri = clientService.getExpedieriClient(clientId);
         return ResponseEntity.ok(expedieri);
     }
 
-    /**
-     * GET /api/client/expedieri/{comandaId}
-     * Obține detaliile unei expedieri
-     */
+   
     @GetMapping("/expedieri/{comandaId}")
     public ResponseEntity<Comanda> getExpediere(@PathVariable Long comandaId) {
         return clientService.getExpediereById(comandaId)
@@ -70,10 +54,7 @@ public class ClientController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * POST /api/client/{clientId}/expedieri
-     * Creează o nouă expediere (wizard)
-     */
+   
     @PostMapping("/{clientId}/expedieri")
     public ResponseEntity<?> creeazaExpediere(
             @PathVariable Long clientId,
@@ -102,10 +83,7 @@ public class ClientController {
 
     // ==================== TRACKING ====================
 
-    /**
-     * GET /api/client/tracking/{codAwb}
-     * Obține tracking-ul unui colet după AWB
-     */
+    /**Obține tracking-ul unui colet după AWB*/
     @GetMapping("/tracking/{codAwb}")
     public ResponseEntity<?> getTracking(@PathVariable String codAwb) {
         var coletOpt = clientService.getColetByAwb(codAwb);
@@ -136,7 +114,7 @@ public class ClientController {
         coletData.put("idColet", colet.getIdColet());
         coletData.put("codAwb", colet.getCodAwb());
         coletData.put("statusColet", colet.getStatusColet());
-        coletData.put("tipServiciu", colet.getTipServiciu());
+        coletData.put("serviciu", colet.getServiciu() != null ? colet.getServiciu().getNume() : null);
         coletData.put("greutateKg", colet.getGreutateKg());
         coletData.put("pretDeclarat", colet.getPretDeclarat());
         coletData.put("rambursIncasat", colet.getRambursIncasat());
@@ -151,10 +129,7 @@ public class ClientController {
         ));
     }
 
-    /**
-     * GET /api/client/tracking/colet/{coletId}
-     * Obține tracking-ul unui colet după ID
-     */
+    /**Obține tracking-ul unui colet după ID */
     @GetMapping("/tracking/colet/{coletId}")
     public ResponseEntity<List<TrackingEvent>> getTrackingByColetId(@PathVariable Long coletId) {
         List<TrackingEvent> events = clientService.getTrackingByColetId(coletId);
@@ -163,20 +138,14 @@ public class ClientController {
 
     // ==================== FACTURI ====================
 
-    /**
-     * GET /api/client/{clientId}/facturi
-     * Obține toate facturile clientului
-     */
+    /**Obține toate facturile clientului*/
     @GetMapping("/{clientId}/facturi")
     public ResponseEntity<List<Factura>> getFacturi(@PathVariable Long clientId) {
         List<Factura> facturi = clientService.getFacturiClient(clientId);
         return ResponseEntity.ok(facturi);
     }
 
-    /**
-     * GET /api/client/facturi/{facturaId}
-     * Obține detaliile unei facturi
-     */
+    /** Obține detaliile unei facturi*/
     @GetMapping("/facturi/{facturaId}")
     public ResponseEntity<Factura> getFactura(@PathVariable Long facturaId) {
         return clientService.getFacturaById(facturaId)
@@ -184,10 +153,7 @@ public class ClientController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * POST /api/client/{clientId}/facturi/{facturaId}/plateste
-     * Marchează o factură ca plătită
-     */
+    /** Marchează o factură ca plătită */
     @PostMapping("/{clientId}/facturi/{facturaId}/plateste")
     public ResponseEntity<?> platesteFactura(@PathVariable Long clientId, @PathVariable Long facturaId) {
         try {
@@ -204,10 +170,7 @@ public class ClientController {
         }
     }
 
-    /**
-     * GET /api/client/{clientId}/facturi/{facturaId}/pdf
-     * Descarcă PDF-ul unei facturi
-     */
+    /** Descarcă PDF-ul unei facturi */
     @GetMapping("/{clientId}/facturi/{facturaId}/pdf")
     public ResponseEntity<byte[]> downloadFacturaPDF(@PathVariable Long clientId, @PathVariable Long facturaId) {
         try {
@@ -228,20 +191,14 @@ public class ClientController {
 
     // ==================== ADRESE ====================
 
-    /**
-     * GET /api/client/{clientId}/adrese
-     * Obține toate adresele clientului
-     */
+    /** Obține toate adresele clientului*/
     @GetMapping("/{clientId}/adrese")
     public ResponseEntity<List<Adresa>> getAdrese(@PathVariable Long clientId) {
         List<Adresa> adrese = clientService.getAdreseClient(clientId);
         return ResponseEntity.ok(adrese);
     }
 
-    /**
-     * POST /api/client/{clientId}/adrese
-     * Adaugă o adresă nouă
-     */
+    /** Adaugă o adresă nouă */
     @PostMapping("/{clientId}/adrese")
     public ResponseEntity<?> adaugaAdresa(
             @PathVariable Long clientId,
@@ -261,10 +218,7 @@ public class ClientController {
         }
     }
 
-    /**
-     * PUT /api/client/{clientId}/adrese/{adresaId}
-     * Actualizează o adresă
-     */
+    /** Actualizează o adresă */
     @PutMapping("/{clientId}/adrese/{adresaId}")
     public ResponseEntity<?> actualizeazaAdresa(
             @PathVariable Long clientId,
@@ -286,7 +240,6 @@ public class ClientController {
     }
 
     /**
-     * DELETE /api/client/{clientId}/adrese/{adresaId}
      * Șterge o adresă
      */
     @DeleteMapping("/{clientId}/adrese/{adresaId}")

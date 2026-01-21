@@ -282,7 +282,7 @@ public class CurierController {
         result.put("codAwb", colet.getCodAwb());
         result.put("status", colet.getStatusColet());
         result.put("greutate", colet.getGreutateKg());
-        result.put("tipServiciu", colet.getTipServiciu());
+        result.put("serviciu", colet.getServiciu() != null ? colet.getServiciu().getNume() : "N/A");
         result.put("pretDeclarat", colet.getPretDeclarat());
         
         // Adresa expeditor
@@ -546,7 +546,7 @@ public class CurierController {
         m.put("codAwb", colet.getCodAwb());
         m.put("status", colet.getStatusColet());
         m.put("greutate", colet.getGreutateKg());
-        m.put("tipServiciu", colet.getTipServiciu());
+        m.put("serviciu", colet.getServiciu() != null ? colet.getServiciu().getNume() : "N/A");
         
         // Informații despre plată
         Comanda comanda = colet.getComanda();
@@ -581,7 +581,7 @@ public class CurierController {
         m.put("codAwb", colet.getCodAwb());
         m.put("status", colet.getStatusColet());
         m.put("greutate", colet.getGreutateKg());
-        m.put("tipServiciu", colet.getTipServiciu());
+        m.put("serviciu", colet.getServiciu() != null ? colet.getServiciu().getNume() : "N/A");
         m.put("pretDeclarat", colet.getPretDeclarat());
         m.put("areRamburs", colet.getPretDeclarat() != null && colet.getPretDeclarat().compareTo(BigDecimal.ZERO) > 0);
         

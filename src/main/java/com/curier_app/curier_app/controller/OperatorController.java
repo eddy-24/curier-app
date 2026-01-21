@@ -199,9 +199,12 @@ public class OperatorController {
             trackingEventRepository.save(event);
         }
 
-        if (updates.containsKey("tipServiciu")) {
-            colet.setTipServiciu((String) updates.get("tipServiciu"));
-        }
+        // Comentat - serviciul se schimbă prin FK, nu prin string
+        // if (updates.containsKey("idServiciu")) {
+        //     Long idServiciu = (Long) updates.get("idServiciu");
+        //     Serviciu serviciu = serviciuRepository.findById(idServiciu).orElse(null);
+        //     colet.setServiciu(serviciu);
+        // }
 
         coletRepository.save(colet);
         return ResponseEntity.ok(colet);
@@ -458,8 +461,10 @@ public class OperatorController {
                 "adresa", formatAdresa(colet.getAdresaDestinatar())
         ));
         awbData.put("greutate", colet.getGreutateKg());
-        awbData.put("volum", colet.getVolumM3());
-        awbData.put("tipServiciu", colet.getTipServiciu());
+        awbData.put("lungime", colet.getLungimeCm());
+        awbData.put("latime", colet.getLatimeCm());
+        awbData.put("inaltime", colet.getInaltimeCm());
+        awbData.put("serviciu", colet.getServiciu() != null ? colet.getServiciu().getNume() : "N/A");
         awbData.put("pretDeclarat", colet.getPretDeclarat());
         awbData.put("status", colet.getStatusColet());
 
@@ -494,13 +499,16 @@ public class OperatorController {
         // Calculează suma totală din colete
         BigDecimal sumaTotala = BigDecimal.ZERO;
         for (Colet colet : comanda.getColete()) {
-            BigDecimal pretBaza = switch (colet.getTipServiciu()) {
-                case "express" -> new BigDecimal("25.00");
-                case "overnight" -> new BigDecimal("35.00");
-                default -> new BigDecimal("15.00");
-            };
+            BigDecimal pretBaza = new BigDecimal("15.00"); // default
+            BigDecimal pretPerKg = new BigDecimal("2.00");
+            
+            if (colet.getServiciu() != null) {
+                pretBaza = colet.getServiciu().getPretBaza();
+                pretPerKg = colet.getServiciu().getPretPerKg();
+            }
+            
             BigDecimal greutate = colet.getGreutateKg() != null ? colet.getGreutateKg() : BigDecimal.ZERO;
-            sumaTotala = sumaTotala.add(pretBaza).add(greutate.multiply(new BigDecimal("2")));
+            sumaTotala = sumaTotala.add(pretBaza).add(greutate.multiply(pretPerKg));
         }
 
         // Creează factura

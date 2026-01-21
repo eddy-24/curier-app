@@ -33,5 +33,30 @@ public interface FacturaRepository extends JpaRepository<Factura, Long> {
     @Query(value = "UPDATE factura SET status_plata = :status WHERE id_factura = :id", nativeQuery = true)
     void updateStatusPlata(@Param("id") Long id, @Param("status") String status);
 
-    // INSERT, UPDATE, DELETE - automat de Spring (save(), delete())
+    // Interogari JOIN
+    
+    // JOIN 5: Facturi cu detalii comandă și client
+    @Query(value = "SELECT f.* FROM factura f " +
+           "INNER JOIN comanda c ON f.id_comanda = c.id_comanda " +
+           "INNER JOIN utilizator u ON c.id_client = u.id_utilizator " +
+           "WHERE u.email = :email", nativeQuery = true)
+    List<Factura> findFacturiByClientEmailWithJoin(@Param("email") String email);
+
+    // INSERT, UPDATE, DELETE
+    // Nota: updateStatusPlata deja există mai sus
+    
+    // INSERT 3: Adaugă factură nouă
+    @Modifying
+    @Transactional
+    @Query(value = "INSERT INTO factura (id_comanda, serie_numar, suma_totala, data_emitere, data_scadenta, status_plata) " +
+           "VALUES (:idComanda, :serieNumar, :sumaTotala, :dataEmitere, :dataScadenta, :statusPlata)", nativeQuery = true)
+    void insertFactura(@Param("idComanda") Long idComanda, @Param("serieNumar") String serieNumar,
+                      @Param("sumaTotala") Double sumaTotala, @Param("dataEmitere") String dataEmitere,
+                      @Param("dataScadenta") String dataScadenta, @Param("statusPlata") String statusPlata);
+    
+    // DELETE 5: Șterge factură după ID
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM factura WHERE id_factura = :id", nativeQuery = true)
+    void deleteFacturaById(@Param("id") Long id);
 }

@@ -1,7 +1,14 @@
 package com.curier_app.curier_app;
 
 import com.curier_app.curier_app.model.*;
-import com.curier_app.curier_app.repository.*;
+import com.curier_app.curier_app.repository.AdresaRepository;
+import com.curier_app.curier_app.repository.ColetRepository;
+import com.curier_app.curier_app.repository.ComandaRepository;
+import com.curier_app.curier_app.repository.FacturaRepository;
+import com.curier_app.curier_app.repository.ServiciuRepository;
+import com.curier_app.curier_app.repository.TraseuColetRepository;
+import com.curier_app.curier_app.repository.UtilizatorRepository;
+import com.curier_app.curier_app.repository.VehiculRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,9 +33,6 @@ public class DataInitializer {
             TraseuColetRepository traseuColetRepo,
             FacturaRepository facturaRepo,
             ServiciuRepository serviciuRepo,
-            DepozitRepository depozitRepo,
-            StatusColetRepository statusColetRepo,
-            MotivEsecRepository motivEsecRepo,
             PasswordEncoder passwordEncoder) {
         
         return args -> {
@@ -222,83 +226,7 @@ public class DataInitializer {
 
             System.out.println("✓ " + comenzi.size() + " comenzi create");
 
-            // 5. COLETE (2 colete per comandă = 10 colete)
-            List<Colet> colete = new ArrayList<>();
-            String[] tipuriServiciu = {"standard", "express", "standard", "express", "overnight"};
-            String[] statusuriColet = {"in_asteptare", "in_tranzit", "livrat", "in_asteptare", "in_tranzit"};
-
-            int coletIndex = 0;
-            for (int i = 0; i < 5; i++) {
-                for (int j = 0; j < 2; j++) {
-                    Colet colet = new Colet();
-                    colet.setComanda(comenzi.get(i));
-                    colet.setCodAwb("AWB" + String.format("%08d", coletIndex + 1));
-                    colet.setGreutateKg(new BigDecimal((j + 1) * 2.5));
-                    colet.setVolumM3(new BigDecimal((j + 1) * 0.5));
-                    colet.setTipServiciu(tipuriServiciu[i]);
-                    colet.setPretDeclarat(new BigDecimal((j + 1) * 100));
-                    colet.setStatusColet(statusuriColet[i]);
-                    colet.setAdresaExpeditor(adrese.get(i * 2));
-                    colet.setAdresaDestinatar(adrese.get(i * 2 + 1));
-                    colete.add(coletRepo.save(colet));
-                    coletIndex++;
-                }
-            }
-
-            System.out.println("✓ " + colete.size() + " colete create");
-
-            // 6. TRASEE COLETE (5 trasee)
-            List<TraseuColet> trasee = new ArrayList<>();
-            String[] statusuriSegment = {"planificat", "in_curs", "finalizat", "planificat", "in_curs"};
-
-            for (int i = 0; i < 5; i++) {
-                TraseuColet traseu = new TraseuColet();
-                traseu.setColet(colete.get(i));
-                traseu.setVehicul(vehicule.get(i));
-                traseu.setCurier(utilizatori.get(8 + i % 2)); // Curierii
-                traseu.setDataIncarcare(LocalDateTime.now().minusDays(i + 1));
-                if (i % 2 == 0) {
-                    traseu.setDataDescarcare(LocalDateTime.now().minusDays(i));
-                }
-                traseu.setLocatieStart(adrese.get(i * 2).getOras());
-                traseu.setLocatieStop(adrese.get(i * 2 + 1).getOras());
-                traseu.setStatusSegment(statusuriSegment[i]);
-                trasee.add(traseuColetRepo.save(traseu));
-            }
-
-            System.out.println("✓ " + trasee.size() + " trasee create");
-
-            // 7. FACTURI (5 facturi)
-            List<Factura> facturi = new ArrayList<>();
-            String[] statusuriPlata = {"achitat", "neachitat", "achitat", "partial_achitat", "neachitat"};
-
-            for (int i = 0; i < 5; i++) {
-                Factura factura = new Factura();
-                factura.setComanda(comenzi.get(i));
-                factura.setSerieNumar("FACT-2025-" + String.format("%04d", i + 1));
-                factura.setSumaTotala(new BigDecimal((i + 1) * 150.50));
-                factura.setDataEmitere(LocalDate.now().minusDays(i));
-                factura.setDataScadenta(LocalDate.now().plusDays(30 - i));
-                factura.setStatusPlata(statusuriPlata[i]);
-                facturi.add(facturaRepo.save(factura));
-            }
-
-            System.out.println("✓ " + facturi.size() + " facturi create");
-
-            System.out.println("\n========================================");
-            System.out.println("✅ Baza de date populată cu succes!");
-            System.out.println("========================================");
-            System.out.println("Total:");
-            System.out.println("  - " + utilizatori.size() + " utilizatori");
-            System.out.println("  - " + adrese.size() + " adrese");
-            System.out.println("  - " + vehicule.size() + " vehicule");
-            System.out.println("  - " + comenzi.size() + " comenzi");
-            System.out.println("  - " + colete.size() + " colete");
-            System.out.println("  - " + trasee.size() + " trasee");
-            System.out.println("  - " + facturi.size() + " facturi");
-            System.out.println("========================================");
-
-            // 8. SERVICII
+            // 5. SERVICII (creăm mai întâi serviciile)
             List<Serviciu> servicii = new ArrayList<>();
             
             Serviciu standard = new Serviciu("Standard", "Livrare în 2-3 zile lucrătoare", 
@@ -319,71 +247,89 @@ public class DataInitializer {
             
             System.out.println("✓ " + servicii.size() + " servicii create");
 
-            // 9. DEPOZITE
-            List<Depozit> depozite = new ArrayList<>();
-            
-            Depozit dep1 = new Depozit("Depozit Central București", 
-                    "Șos. Pipera nr. 42", "București", "București");
-            dep1.setTelefon("021-123-4567");
-            dep1.setEmail("bucuresti@curierapp.com");
-            dep1.setCapacitateMaxima(10000);
-            depozite.add(depozitRepo.save(dep1));
-            
-            Depozit dep2 = new Depozit("Depozit Cluj", 
-                    "Str. Fabricii nr. 15", "Cluj-Napoca", "Cluj");
-            dep2.setTelefon("0264-123-456");
-            dep2.setEmail("cluj@curierapp.com");
-            dep2.setCapacitateMaxima(5000);
-            depozite.add(depozitRepo.save(dep2));
-            
-            Depozit dep3 = new Depozit("Depozit Timișoara", 
-                    "Calea Aradului nr. 88", "Timișoara", "Timiș");
-            dep3.setTelefon("0256-123-456");
-            dep3.setEmail("timisoara@curierapp.com");
-            dep3.setCapacitateMaxima(4000);
-            depozite.add(depozitRepo.save(dep3));
-            
-            System.out.println("✓ " + depozite.size() + " depozite create");
+            // 6. COLETE (2 colete per comandă = 10 colete)
+            List<Colet> colete = new ArrayList<>();
+            Serviciu[] tipuriServiciu = {standard, express, standard, express, sameDay};
+            String[] statusuriColet = {"in_asteptare", "in_tranzit", "livrat", "in_asteptare", "in_tranzit"};
 
-            // 10. STATUSURI COLET
-            List<StatusColet> statusuri = new ArrayList<>();
-            
-            statusuri.add(statusColetRepo.save(new StatusColet("inregistrat", "Înregistrat", "#6b7280", 1)));
-            statusuri.add(statusColetRepo.save(new StatusColet("preluat", "Preluat de curier", "#3b82f6", 2)));
-            statusuri.add(statusColetRepo.save(new StatusColet("in_tranzit", "În tranzit", "#8b5cf6", 3)));
-            statusuri.add(statusColetRepo.save(new StatusColet("in_depozit", "În depozit", "#f59e0b", 4)));
-            statusuri.add(statusColetRepo.save(new StatusColet("in_livrare", "În livrare", "#06b6d4", 5)));
-            statusuri.add(statusColetRepo.save(new StatusColet("livrat", "Livrat", "#22c55e", 6)));
-            statusuri.add(statusColetRepo.save(new StatusColet("esuat", "Livrare eșuată", "#ef4444", 7)));
-            statusuri.add(statusColetRepo.save(new StatusColet("retur", "Returnat", "#f97316", 8)));
-            
-            System.out.println("✓ " + statusuri.size() + " statusuri create");
+            int coletIndex = 0;
+            for (int i = 0; i < 5; i++) {
+                for (int j = 0; j < 2; j++) {
+                    Colet colet = new Colet();
+                    colet.setComanda(comenzi.get(i));
+                    colet.setCodAwb("AWB" + String.format("%08d", coletIndex + 1));
+                    colet.setGreutateKg(new BigDecimal((j + 1) * 2.5));
+                    colet.setLungimeCm(new BigDecimal((j + 1) * 30));
+                    colet.setLatimeCm(new BigDecimal((j + 1) * 20));
+                    colet.setInaltimeCm(new BigDecimal((j + 1) * 15));
+                    colet.setServiciu(tipuriServiciu[i]);
+                    colet.setPretDeclarat(new BigDecimal((j + 1) * 100));
+                    colet.setStatusColet(statusuriColet[i]);
+                    colet.setAdresaExpeditor(adrese.get(i * 2));
+                    colet.setAdresaDestinatar(adrese.get(i * 2 + 1));
+                    colete.add(coletRepo.save(colet));
+                    coletIndex++;
+                }
+            }
 
-            // 11. MOTIVE ESEC
-            List<MotivEsec> motive = new ArrayList<>();
-            
-            motive.add(motivEsecRepo.save(new MotivEsec("absent", "Destinatar absent", true)));
-            motive.add(motivEsecRepo.save(new MotivEsec("adresa_gresita", "Adresă incorectă/inexistentă", false)));
-            motive.add(motivEsecRepo.save(new MotivEsec("refuzat", "Colet refuzat de destinatar", false)));
-            motive.add(motivEsecRepo.save(new MotivEsec("deteriorat", "Colet deteriorat", false)));
-            motive.add(motivEsecRepo.save(new MotivEsec("telefon_invalid", "Telefon invalid/fără răspuns", true)));
-            motive.add(motivEsecRepo.save(new MotivEsec("reprogramat", "Reprogramat la cererea clientului", true)));
-            motive.add(motivEsecRepo.save(new MotivEsec("acces_imposibil", "Acces imposibil la adresă", true)));
-            
-            System.out.println("✓ " + motive.size() + " motive eșec create");
+            System.out.println("✓ " + colete.size() + " colete create");
 
+            // 7. TRASEE COLETE (5 trasee)
+            List<TraseuColet> trasee = new ArrayList<>();
+            String[] statusuriSegment = {"planificat", "in_curs", "finalizat", "planificat", "in_curs"};
+
+            for (int i = 0; i < 5; i++) {
+                TraseuColet traseu = new TraseuColet();
+                traseu.setColet(colete.get(i));
+                traseu.setVehicul(vehicule.get(i));
+                traseu.setCurier(utilizatori.get(8 + i % 2)); // Curierii
+                traseu.setDataIncarcare(LocalDateTime.now().minusDays(i + 1));
+                if (i % 2 == 0) {
+                    traseu.setDataDescarcare(LocalDateTime.now().minusDays(i));
+                }
+                traseu.setLocatieStart(adrese.get(i * 2).getOras());
+                traseu.setLocatieStop(adrese.get(i * 2 + 1).getOras());
+                traseu.setStatusSegment(statusuriSegment[i]);
+                trasee.add(traseuColetRepo.save(traseu));
+            }
+
+            System.out.println("✓ " + trasee.size() + " trasee create");
+
+            // 8. FACTURI (5 facturi)
+            List<Factura> facturi = new ArrayList<>();
+            String[] statusuriPlata = {"achitat", "neachitat", "achitat", "partial_achitat", "neachitat"};
+
+            for (int i = 0; i < 5; i++) {
+                Factura factura = new Factura();
+                factura.setComanda(comenzi.get(i));
+                factura.setSerieNumar("FACT-2025-" + String.format("%04d", i + 1));
+                factura.setSumaTotala(new BigDecimal((i + 1) * 150.50));
+                factura.setDataEmitere(LocalDate.now().minusDays(i));
+                factura.setDataScadenta(LocalDate.now().plusDays(30 - i));
+                factura.setStatusPlata(statusuriPlata[i]);
+                facturi.add(facturaRepo.save(factura));
+            }
+
+            System.out.println("✓ " + facturi.size() + " facturi create");
+
+            System.out.println("\n========================================");
+            System.out.println("✅ Date inițiale create cu succes!");
             System.out.println("========================================");
-            System.out.println("Date administrative:");
+            System.out.println("Total:");
+            System.out.println("  - " + utilizatori.size() + " utilizatori");
+            System.out.println("  - " + adrese.size() + " adrese");
+            System.out.println("  - " + vehicule.size() + " vehicule");
+            System.out.println("  - " + comenzi.size() + " comenzi");
             System.out.println("  - " + servicii.size() + " servicii");
-            System.out.println("  - " + depozite.size() + " depozite");
-            System.out.println("  - " + statusuri.size() + " statusuri");
-            System.out.println("  - " + motive.size() + " motive eșec");
+            System.out.println("  - " + colete.size() + " colete");
+            System.out.println("  - " + trasee.size() + " trasee");
+            System.out.println("  - " + facturi.size() + " facturi");
             System.out.println("========================================");
             System.out.println("\nCredențiale utilizatori:");
-            System.out.println("  Clienti: client1-5 / pass123");
-            System.out.println("  Curieri: curier1-3 / pass123");
-            System.out.println("  Operatori: operator1-2 / pass123");
-            System.out.println("  Admin: admin / admin123");
+            System.out.println("  - admin.sistem / pass123 (Admin)");
+            System.out.println("  - maria.operator / pass123 (Operator)");
+            System.out.println("  - dan.curier, ana.transport, radu.livrator / pass123 (Curieri)");
+            System.out.println("  - andreea.popescu, mihai.ionescu, elena.georgescu / pass123 (Clienți)");
             System.out.println("========================================\n");
         };
     }
